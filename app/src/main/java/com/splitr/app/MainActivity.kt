@@ -4,8 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.navigation.compose.rememberNavController
-import com.splitr.app.ui.HomeScreen
+import com.splitr.app.ui.SplitrApp
 import com.splitr.app.ui.theme.SplitrTheme
 
 class MainActivity : ComponentActivity() {
@@ -14,8 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SplitrTheme {
-                val navController = rememberNavController()
-                HomeScreen(navController = navController)
+                SplitrApp()
             }
         }
     }

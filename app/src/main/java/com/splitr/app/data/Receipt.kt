@@ -9,6 +9,7 @@ import androidx.room.Relation
 @Entity(tableName = "receipts")
 data class Receipt(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "date") val date: String,
     @ColumnInfo(name = "total_amount") val totalAmount: Double
 )

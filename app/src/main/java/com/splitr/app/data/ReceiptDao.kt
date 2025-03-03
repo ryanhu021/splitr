@@ -20,4 +20,10 @@ interface ReceiptDao {
 
     @Delete
     suspend fun deleteReceipt(receipt: Receipt)
+
+    @Update
+    suspend fun updateItem(item: Item)
+
+    @Update
+    suspend fun updateReceipt(receipt: Receipt)
 }

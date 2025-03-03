@@ -38,7 +38,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private fun addTestReceipts() {
         viewModelScope.launch {
             if (receiptDao.getAllReceipts().isEmpty()) { // Avoid duplicate inserts
-                val receipt = Receipt(date = "2025-02-18", totalAmount = 45.67)
+                // test receipt
+                val receipt = Receipt(name = "Costco", date = "2025-02-18", totalAmount = 45.67)
                 val receiptId = receiptDao.insertReceipt(receipt).toInt()
 
                 val items = listOf(

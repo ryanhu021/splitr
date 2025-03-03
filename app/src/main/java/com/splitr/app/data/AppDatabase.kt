@@ -3,7 +3,7 @@ package com.splitr.app.data
 import android.content.Context
 import androidx.room.*
 
-@Database(entities = [Receipt::class, Item::class], version = 1, exportSchema = false)
+@Database(entities = [Receipt::class, Item::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun receiptDao(): ReceiptDao
 
@@ -17,7 +17,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "splitr_database"
-                ).build()
+                ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance
             }
