@@ -158,7 +158,8 @@ fun HomeScreen(
 @Composable
 fun CameraScreen(
     onTextRecognized: (String) -> Unit,
-    viewModel: CameraViewModel = viewModel()
+    viewModel: CameraViewModel = viewModel(),
+    homeViewModel: HomeViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -175,9 +176,7 @@ fun CameraScreen(
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
-        onResult = { granted ->
-            hasCameraPermission = granted
-        }
+        onResult = { granted -> hasCameraPermission = granted }
     )
 
     LaunchedEffect(Unit) {
@@ -187,8 +186,10 @@ fun CameraScreen(
     }
 
     val textRecognitionResult by viewModel.textRecognitionResult.collectAsState()
+    val parsedReceipt by viewModel.parsedReceipt.collectAsState()
+    val parsedItems by viewModel.parsedItems.collectAsState()
 
-    // Handle the text recognition result
+    // Handle recognized text
     LaunchedEffect(textRecognitionResult) {
         textRecognitionResult?.let {
             if (it.isNotBlank()) {
@@ -197,6 +198,7 @@ fun CameraScreen(
             }
         }
     }
+
     if (hasCameraPermission) {
         var imageCapture: ImageCapture? = null
 
@@ -209,8 +211,6 @@ fun CameraScreen(
                         implementationMode = PreviewView.ImplementationMode.COMPATIBLE
                         scaleType = PreviewView.ScaleType.FILL_CENTER
                     }
-
-
 
                     cameraProviderFuture.addListener({
                         val cameraProvider = cameraProviderFuture.get()
@@ -241,7 +241,7 @@ fun CameraScreen(
                     previewView
                 }
             )
-            // Capture button
+
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -271,8 +271,30 @@ fun CameraScreen(
                 }
             }
         }
+
+        parsedReceipt?.let { receipt ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text("Store: ${receipt.name}")
+                Text("Date: ${receipt.date}")
+                Text("Total: $${receipt.totalAmount}")
+
+                parsedItems.forEach { item ->
+                    Text("${item.name} - $${item.price} x ${item.quantity}")
+                }
+
+                Button(onClick = {
+                    homeViewModel.addReceipt(receipt, parsedItems)
+                    viewModel.clearResult()
+                }) {
+                    Text("Save Receipt")
+                }
+            }
+        }
     } else {
-        // Camera permission not granted
         Column(
             modifier = Modifier
                 .fillMaxSize()
