@@ -184,16 +184,23 @@ fun CameraScreen(
         }
     }
 
-    val textRecognitionResult by viewModel.textRecognitionResult.collectAsState()
+    val receipt by viewModel.receipt.collectAsState()
+    val items by viewModel.items.collectAsState()
 
     // Handle recognized text
-    LaunchedEffect(textRecognitionResult) {
-        textRecognitionResult?.let {
-            if (it.isNotBlank()) {
-                Log.e("CameraScreen", "Parsed Text: $it")
-                viewModel.clearResult()
-                onTextRecognized(it) // Navigate after saving
+    LaunchedEffect(receipt, items) {
+        if (receipt != null && items.isNotEmpty()) {
+            // Insert into database
+//            val receiptId = database.receiptDao().insertReceipt(receipt!!)
+            Log.e("Receipt", "Inserted Receipt - ID: $receipt.id, Name: $receipt.name, Date: $receipt.date, Total: $receipt.totalAmount")
+            items.forEachIndexed { index, item ->
+//                database.itemDao().insertItem(item.copy(receiptId = receiptId.toInt()))
+                Log.e("Item", "Item #$index - Name: ${item.name}, Price: ${item.price}, Quantity: ${item.quantity}, Receipt ID: ${item.receiptId}")
             }
+
+            // Navigate after saving
+            onTextRecognized("Done")
+            viewModel.clearResult()
         }
     }
 
