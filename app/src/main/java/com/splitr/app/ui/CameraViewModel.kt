@@ -21,13 +21,11 @@ import java.util.Calendar
 import java.util.Locale
 import java.util.regex.Pattern
 
-class CameraViewModel : ViewModel() {
-
-    private val _receipt = MutableStateFlow<Receipt?>(null)
-    val receipt: StateFlow<Receipt?> = _receipt
-
-    private val _items = MutableStateFlow<List<Item>>(emptyList())
-    val items: StateFlow<List<Item>> = _items
+class CameraViewModel(
+    private val database: AppDatabase
+) : ViewModel() {
+    private val _textRecognitionResult = MutableStateFlow<String?>(null)
+    val textRecognitionResult: StateFlow<String?> = _textRecognitionResult
 
     private val recognizer: TextRecognizer =
         TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
@@ -47,7 +45,8 @@ class CameraViewModel : ViewModel() {
         recognizer.process(image)
             .addOnSuccessListener { visionText ->
                 val parsedText = visionText.text
-                extractReceiptData(parsedText)
+                _textRecognitionResult.value = parsedText
+                saveReceiptToDatabase(parsedText)
             }
             .addOnFailureListener { e ->
                 Log.e("CameraViewModel", "Text recognition failed: ${e.message}")
@@ -57,27 +56,39 @@ class CameraViewModel : ViewModel() {
             }
     }
 
-    private fun extractReceiptData(parsedText: String) {
+    private fun saveReceiptToDatabase(parsedText: String) {
         val products = getTuples(parsedText)
         if (products.isEmpty()) return
 
         val receiptName = "Scanned Receipt"
-        val receiptDate = Calendar.getInstance().time.toString()
+        val receiptDate = Calendar.getInstance().time.toString()  // Example timestamp
         val totalAmount = products.sumOf { it.first }
 
-        _receipt.value = Receipt(
-            name = receiptName,
-            date = receiptDate,
-            totalAmount = totalAmount
-        )
+        viewModelScope.launch {
+            val receiptId = database.receiptDao().insertReceipt(
+                Receipt(
+                    name = receiptName,
+                    date = receiptDate,
+                    totalAmount = totalAmount
+                )
+            ).toInt()
 
-        _items.value = products.map { (price, name) ->
-            Item(
-                receiptId = 0, // Will be assigned when saved to the database
-                name = name,
-                price = price,
-                quantity = 1
-            )
+            Log.e("Receipt", "Inserted Receipt - ID: $receiptId, Name: $receiptName, Date: $receiptDate, Total: $totalAmount")
+
+            products.forEachIndexed { index, (price, name) ->
+                if (name.isNotBlank()) {
+                    val item = Item(
+                        receiptId = receiptId,
+                        name = name,
+                        price = price,
+                        quantity = 1
+                    )
+//                    database.itemDao().insertItem(item)
+                    Log.e("Item", "Item #$index - Name: ${item.name}, Price: ${item.price}, Quantity: ${item.quantity}, Receipt ID: ${item.receiptId}")
+                } else {
+                    Log.e("Item", "Skipping empty item at index $index")
+                }
+            }
         }
     }
 
@@ -134,8 +145,7 @@ class CameraViewModel : ViewModel() {
     }
 
     fun clearResult() {
-        _receipt.value = null
-        _items.value = emptyList()
+        _textRecognitionResult.value = null
     }
 
     override fun onCleared() {
