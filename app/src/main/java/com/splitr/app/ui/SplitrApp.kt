@@ -159,6 +159,7 @@ fun HomeScreen(
 fun CameraScreen(
     onTextRecognized: (String) -> Unit,
     viewModel: CameraViewModel = viewModel(),
+    homeViewModel: HomeViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -185,14 +186,15 @@ fun CameraScreen(
     }
 
     val textRecognitionResult by viewModel.textRecognitionResult.collectAsState()
+    val parsedReceipt by viewModel.parsedReceipt.collectAsState()
+    val parsedItems by viewModel.parsedItems.collectAsState()
 
     // Handle recognized text
     LaunchedEffect(textRecognitionResult) {
         textRecognitionResult?.let {
             if (it.isNotBlank()) {
-                Log.e("CameraScreen", "Parsed Text: $it")
+                onTextRecognized(it)
                 viewModel.clearResult()
-                onTextRecognized(it) // Navigate after saving
             }
         }
     }
@@ -266,6 +268,29 @@ fun CameraScreen(
                         contentDescription = "Take Picture",
                         tint = Color.White,
                     )
+                }
+            }
+        }
+
+        parsedReceipt?.let { receipt ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text("Store: ${receipt.name}")
+                Text("Date: ${receipt.date}")
+                Text("Total: $${receipt.totalAmount}")
+
+                parsedItems.forEach { item ->
+                    Text("${item.name} - $${item.price} x ${item.quantity}")
+                }
+
+                Button(onClick = {
+                    homeViewModel.addReceipt(receipt, parsedItems)
+                    viewModel.clearResult()
+                }) {
+                    Text("Save Receipt")
                 }
             }
         }
