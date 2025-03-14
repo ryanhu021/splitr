@@ -10,6 +10,7 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.splitr.app.data.Item
+import com.splitr.app.data.Parser
 import com.splitr.app.data.Receipt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,14 +44,20 @@ class CameraViewModel : ViewModel() {
 
         recognizer.process(image)
             .addOnSuccessListener { visionText ->
-                val parsedText = buildString {
-                    for (block in visionText.textBlocks) {
-                        for (line in block.lines) {
-                            append(line.text.trim()).append(" ")
-                        }
-                        append("\n") // Insert a newline between blocks
-                    }
-                }
+                val parsedText = ""
+//                val parsedText = buildString {
+//                    for (block in visionText.textBlocks) {
+//                        Log.e("New Block", "---------")
+//                        for (line in block.lines) {
+//                            append(line.text.trim()).append(" ")
+//                            Log.e("Line", line.text)
+//                        }
+//                        append("\n") // Insert a newline between blocks
+//                    }
+//                }
+
+                _parsedItems.value = Parser.parseReceipt(visionText, 0); // TODO: add receiptId
+                Log.e("Parsed items", _parsedItems.value.toString())
 
                 _textRecognitionResult.value = parsedText
                 parseReceiptData(parsedText)
