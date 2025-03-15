@@ -1,9 +1,15 @@
 package com.splitr.app.data
 
 import android.content.Context
-import androidx.room.*
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
 
-@Database(entities = [Receipt::class, Item::class], version = 2, exportSchema = false)
+@Database(
+    entities = [Receipt::class, Item::class, User::class, UserItemCrossRef::class],
+    version = 3,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun receiptDao(): ReceiptDao
 
