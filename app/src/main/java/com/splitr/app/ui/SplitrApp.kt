@@ -25,8 +25,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -60,6 +61,7 @@ import com.splitr.app.data.AppDatabase
 import com.splitr.app.data.Item
 import com.splitr.app.data.Receipt
 import com.splitr.app.data.ReceiptWithItems
+import com.splitr.app.data.User
 import com.splitr.app.ui.theme.ItemizedReceiptViewModel
 import kotlinx.serialization.Serializable
 
@@ -74,6 +76,9 @@ sealed class Routes {
     data class ItemizedReceipt(
         val receiptId: Int
     )
+
+    @Serializable
+    data object Collaborators
 }
 
 @Composable
@@ -95,6 +100,7 @@ fun SplitrApp() {
                     navController.navigate(Routes.ItemizedReceipt(receiptId))
                 },
                 onScanReceipt = { navController.navigate(Routes.Camera) },
+                onManageCollaborators = { navController.navigate(Routes.Collaborators) }
             )
         }
         composable<Routes.ItemizedReceipt> { backstackEntry ->
@@ -121,6 +127,12 @@ fun SplitrApp() {
                 }
             )
         }
+        composable<Routes.Collaborators> {
+            val viewModel: CollaboratorsViewModel = viewModel {
+                CollaboratorsViewModel(receiptDao)
+            }
+            CollaboratorsScreen(viewModel)
+        }
     }
 }
 
@@ -128,6 +140,7 @@ fun SplitrApp() {
 fun HomeScreen(
     onEditReceipt: (Int) -> Unit,
     onScanReceipt: () -> Unit,
+    onManageCollaborators: () -> Unit,
     viewModel: HomeViewModel = viewModel(),
 ) {
     val receipts by viewModel.receiptList.observeAsState(emptyList())
@@ -145,6 +158,13 @@ fun HomeScreen(
             onClick = onScanReceipt
         ) {
             Text("Scan New Receipt")
+        }
+
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = onManageCollaborators
+        ) {
+            Text("Manage Collaborators")
         }
 
         LazyColumn {
@@ -264,7 +284,7 @@ fun CameraScreen(
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Info,
+                        imageVector = Icons.Default.Add,
                         contentDescription = "Take Picture",
                         tint = Color.White,
                     )
@@ -447,5 +467,134 @@ fun ItemRow(
             label = { Text("Price") },
             textStyle = TextStyle.Default.copy(fontWeight = FontWeight.Bold)
         )
+    }
+}
+
+@Composable
+fun CollaboratorsScreen(
+    viewModel: CollaboratorsViewModel = viewModel()
+) {
+    val collaborators by viewModel.collaborators.collectAsState()
+
+    var showAddDialog by remember { mutableStateOf(false) }
+    var newCollaboratorName by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Title
+        Text("Manage Collaborators", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Collaborators List
+        LazyColumn(
+            modifier = Modifier.weight(1f)
+        ) {
+            items(collaborators) { user ->
+                CollaboratorItem(
+                    user = user,
+                    onDelete = { viewModel.deleteCollaborator(user) }
+                )
+            }
+        }
+
+        // "+" Button for Adding Collaborators
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Button(
+                onClick = { showAddDialog = true },
+                modifier = Modifier
+                    .width(60.dp)
+                    .height(60.dp)
+            ) {
+                Text("+", fontSize = 24.sp)
+            }
+        }
+
+        // Add Collaborator Dialog
+        if (showAddDialog) {
+            AddCollaboratorDialog(
+                newCollaboratorName = newCollaboratorName,
+                onNameChange = { newCollaboratorName = it },
+                onAddClick = {
+                    if (newCollaboratorName.isNotBlank()) {
+                        viewModel.addCollaborator(User(name = newCollaboratorName.trim()))
+                        newCollaboratorName = "" // Clear input field
+                        showAddDialog = false  // Close the dialog
+                    }
+                },
+                onDismiss = {
+                    showAddDialog = false
+                    newCollaboratorName = ""
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun AddCollaboratorDialog(
+    newCollaboratorName: String,
+    onNameChange: (String) -> Unit,
+    onAddClick: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Add Collaborator") },
+        text = {
+            TextField(
+                value = newCollaboratorName,
+                onValueChange = onNameChange,
+                label = { Text("Collaborator Name") }
+            )
+        },
+        confirmButton = {
+            Button(onClick = onAddClick) {
+                Text("Add")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun CollaboratorItem(
+    user: User,
+    onDelete: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(user.name, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete Collaborator",
+                    tint = Color.Red
+                )
+            }
+        }
     }
 }
