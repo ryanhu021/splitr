@@ -60,7 +60,7 @@ public class Parser {
                 }
             }
             // add item to the list
-            Item item = new Item(i, receiptId, closestLine.getText().trim(), Double.parseDouble(price.getText().trim().substring(1)), 1);
+            Item item = new Item(i, receiptId, closestLine.getText().trim(), Double.parseDouble(price.getText().trim().replace(",", ".").substring(1)), 1);
             items.add(item);
         }
 
