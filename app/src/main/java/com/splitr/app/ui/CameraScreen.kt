@@ -12,6 +12,7 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,6 +54,7 @@ fun CameraScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
+
     var hasCameraPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
@@ -76,6 +79,8 @@ fun CameraScreen(
     val parsedReceipt by viewModel.parsedReceipt.collectAsState()
     val parsedItems by viewModel.parsedItems.collectAsState()
     var imageCapture = remember { mutableStateOf<ImageCapture?>(null) }
+    var isProcessing by remember { mutableStateOf(false) }
+
 
     // Handle recognized text
     LaunchedEffect(textRecognitionResult) {
@@ -136,6 +141,7 @@ fun CameraScreen(
             ) {
                 Button(
                     onClick = {
+                        isProcessing = true
                         Log.e("CameraScreen", "Taking picture...")
                         Log.e("CameraScreen", "imageCapture: $imageCapture")
                         imageCapture.value?.takePicture(
@@ -144,10 +150,12 @@ fun CameraScreen(
                                 override fun onCaptureSuccess(imageProxy: ImageProxy) {
                                     Log.e("CameraScreen", "Image captured")
                                     viewModel.processImage(imageProxy, onReceiptProcessed)
+                                    isProcessing = false
                                 }
 
                                 override fun onError(exception: ImageCaptureException) {
                                     Log.e("CameraScreen", "Image capture failed", exception)
+                                    isProcessing = false
                                 }
                             }
                         )
@@ -184,6 +192,21 @@ fun CameraScreen(
 //                }
 //            }
 //        }
+        // Overlay loading screen if processing
+        if (isProcessing) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator(color = Color.White)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Processing...", color = Color.White)
+                }
+            }
+        }
     } else {
         Column(
             modifier = Modifier

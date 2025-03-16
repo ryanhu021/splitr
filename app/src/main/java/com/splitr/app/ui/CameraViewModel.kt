@@ -12,6 +12,7 @@ import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.splitr.app.data.Item
 import com.splitr.app.data.Parser
+import com.splitr.app.data.ParserResult
 import com.splitr.app.data.Receipt
 import com.splitr.app.data.ReceiptDao
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +55,12 @@ class CameraViewModel(
                 val parsedText = ""
 
                 // parse receipt details and items
-                val parserResult = Parser.parseReceipt(visionText, -1)
+                var parserResult = ParserResult("", "", 0.0, emptyList())
+                try {
+                    parserResult = Parser.parseReceipt(visionText, -1)
+                } catch (e: Exception) {
+                    Log.e("CameraViewModel", "Error parsing receipt data: ${e.message}")
+                }
 
                 // create and insert the receipt
                 val receipt = Receipt(
