@@ -20,7 +20,7 @@ data class Item(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo(name = "receipt_id") val receiptId: Int,
     @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "price") val price: Double,
+    @ColumnInfo(name = "price") var price: Double,
     @ColumnInfo(name = "quantity") val quantity: Int
 )
 
