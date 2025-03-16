@@ -39,8 +39,20 @@ class ItemizedReceiptViewModel(
         }
     }
 
-    fun setNewReceipt(receipt: ReceiptWithItems) {
-        _receiptWithItems.value = receipt
+    fun updateReceiptName(name: String) {
+        viewModelScope.launch {
+            _receiptWithItems.value?.receipt?.let { receipt ->
+                receiptDao.updateReceipt(receipt.copy(name = name))
+            }
+        }
+    }
+
+    fun updateReceiptDate(date: String) {
+        viewModelScope.launch {
+            _receiptWithItems.value?.receipt?.let { receipt ->
+                receiptDao.updateReceipt(receipt.copy(date = date))
+            }
+        }
     }
 
     fun deleteReceipt(receipt: Receipt) {

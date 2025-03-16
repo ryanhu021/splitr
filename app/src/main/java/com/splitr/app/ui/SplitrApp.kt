@@ -224,6 +224,32 @@ fun HomeScreen(
 }
 
 @Composable
+fun ReceiptItem(
+    receipt: Receipt,
+    onEditReceipt: (Int) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(receipt.name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(receipt.date)
+                Text("Total: ${'$'}${receipt.totalAmount}")
+            }
+            IconButton(onClick = { onEditReceipt(receipt.id) }) {
+                Icon(Icons.Filled.Edit, contentDescription = "Edit Receipt", tint = Color.Gray)
+            }
+        }
+    }
+}
+
+@Composable
 fun CameraScreen(
     onTextRecognized: (String) -> Unit,
     onReceiptProcessed: (Int) -> Unit,
@@ -393,6 +419,8 @@ fun ItemizedReceiptScreen(
     viewModel: ItemizedReceiptViewModel = viewModel()
 ) {
     var editableItems by remember { mutableStateOf(receiptWithItems.items) }
+    var updatedName by remember { mutableStateOf(receiptWithItems.receipt.name) }
+    var updatedDate by remember { mutableStateOf(receiptWithItems.receipt.date) }
 
     Column(
         modifier = Modifier
@@ -401,8 +429,32 @@ fun ItemizedReceiptScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("Receipt Details", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        Text("Name: ${receiptWithItems.receipt.name}")
-        Text("Date: ${receiptWithItems.receipt.date}")
+
+        TextField(
+            value = updatedName,
+            onValueChange = { newName ->
+                updatedName = newName
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            label = { Text("Name") },
+            textStyle = TextStyle.Default.copy(fontWeight = FontWeight.Medium)
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        TextField(
+            value = updatedDate,
+            onValueChange = { newDate ->
+                updatedDate = newDate
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            label = { Text("Date") },
+            textStyle = TextStyle.Default.copy(fontWeight = FontWeight.Medium)
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -463,38 +515,13 @@ fun ItemizedReceiptScreen(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = { /* TODO: Implement collaborator edit action */
                         viewModel.updateItems(editableItems)
+                        viewModel.updateReceiptName(updatedName)
+                        viewModel.updateReceiptDate(updatedDate)
                         onNext(receiptWithItems.receipt.id)
                     }
                 ) {
                     Text("Next")
                 }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun ReceiptItem(
-    receipt: Receipt,
-    onEditReceipt: (Int) -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(receipt.name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Text(receipt.date)
-                Text("Total: ${'$'}${receipt.totalAmount}")
-            }
-            IconButton(onClick = { onEditReceipt(receipt.id) }) {
-                Icon(Icons.Filled.Edit, contentDescription = "Edit Receipt", tint = Color.Gray)
             }
         }
     }
