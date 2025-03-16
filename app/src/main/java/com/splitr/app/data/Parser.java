@@ -14,7 +14,7 @@ public class Parser {
     private static final Pattern DATE_MATCHER = Pattern.compile("\\b(?:\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}|\\d{1,2}[-/]\\d{1,2}[-/]\\d{2,4})\\b");
 
     public static ParserResult parseReceipt(Text text, int receiptId) {
-        List<Item> items = new ArrayList<>();
+        List<ItemWithoutIds> items = new ArrayList<>();
         List<Text.Line> prices = new ArrayList<>();
         String title = "";
         String date = "";
@@ -84,7 +84,7 @@ public class Parser {
             } else {
                 // otherwise add as new item
                 // item ids start at 1
-                items.add(new Item(items.size() + 1, receiptId, closestLine.getText().trim(), Double.parseDouble(extractPrice(price)), 1));
+                items.add(new ItemWithoutIds(closestLine.getText().trim(), Double.parseDouble(extractPrice(price)), 1));
             }
         }
 

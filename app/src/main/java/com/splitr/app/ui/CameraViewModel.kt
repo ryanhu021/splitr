@@ -10,24 +10,21 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import com.splitr.app.data.AppDatabase
 import com.splitr.app.data.Item
 import com.splitr.app.data.Parser
-import com.splitr.app.data.ParserResult
 import com.splitr.app.data.Receipt
 import com.splitr.app.data.ReceiptDao
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.nio.file.Files.find
 import java.util.regex.Pattern
 
 class CameraViewModel(
     private val receiptDao: ReceiptDao,
 ) : ViewModel() {
     // TODO: remove these
-     private val _textRecognitionResult = MutableStateFlow<String?>(null)
-     val textRecognitionResult: StateFlow<String?> = _textRecognitionResult
+    private val _textRecognitionResult = MutableStateFlow<String?>(null)
+    val textRecognitionResult: StateFlow<String?> = _textRecognitionResult
 
     private val _parsedReceipt = MutableStateFlow<Receipt?>(null)
     val parsedReceipt: StateFlow<Receipt?> = _parsedReceipt
@@ -73,7 +70,12 @@ class CameraViewModel(
 
                         // associate parsed items with the newly created receipt ID
                         val itemsWithReceiptId = parserResult.items.map { item ->
-                            item.copy(receiptId = receiptId)
+                            Item(
+                                receiptId = receiptId,
+                                name = item.name,
+                                price = item.price,
+                                quantity = item.quantity
+                            )
                         }
 
                         // insert items into the database
