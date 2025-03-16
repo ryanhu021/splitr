@@ -68,8 +68,6 @@ import com.splitr.app.data.Receipt
 import com.splitr.app.data.ReceiptWithItems
 import com.splitr.app.data.ReceiptWithItemsAndUsers
 import com.splitr.app.data.User
-import com.splitr.app.ui.theme.DistributeReceiptViewModel
-import com.splitr.app.ui.theme.ItemizedReceiptViewModel
 import kotlinx.serialization.Serializable
 
 sealed class Routes {
