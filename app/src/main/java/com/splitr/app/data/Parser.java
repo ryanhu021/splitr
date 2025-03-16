@@ -11,7 +11,7 @@ public class Parser {
     public static ParserResult parseReceipt(Text text, int receiptId) {
         List<Item> items = new ArrayList<>();
         List<Text.Line> prices = new ArrayList<>();
-        String priceRegex = "\\$\\d{1,3}(?:[.,]\\d{2})";
+        String priceRegex = "\\$\\d{1,3}(?:\\s*[.,]\\s*\\d{2})";
         Pattern pattern = Pattern.compile(priceRegex);
 
         // iterate through all blocks
@@ -30,11 +30,11 @@ public class Parser {
         prices.sort(Comparator.comparingDouble(a -> a.getBoundingBox().exactCenterY()));
 
         // get last price (total price) and remove
-        String lastPrice = prices.get(prices.size() - 1).getText().trim().replace(",", ".");
+        String lastPrice = extractPrice(prices.get(prices.size() - 1));
         prices.remove(prices.size() - 1);
         for (int i = prices.size() - 1; i >= 1; i--) {
             // remove all prices matching total price
-            String cleanedPrice = prices.get(i).getText().trim().replace(",", ".");
+            String cleanedPrice = extractPrice(prices.get(i));
             if (cleanedPrice.equals(lastPrice)) {
                 prices.remove(i);
             } else {
@@ -59,11 +59,15 @@ public class Parser {
                 }
             }
             // add item to the list
-            Item item = new Item(i, receiptId, closestLine.getText().trim(), Double.parseDouble(price.getText().trim().replace(",", ".").substring(1)), 1);
+            Item item = new Item(i, receiptId, closestLine.getText().trim(), Double.parseDouble(extractPrice(price).substring(1)), 1);
             items.add(item);
         }
 
         // create new ParserResult
-        return new ParserResult("Trader Joe's", "2025-03-15", Double.parseDouble(lastPrice), items);
+        return new ParserResult("Trader Joe's", "2025-03-15", Double.parseDouble(lastPrice.substring(1)), items);
+    }
+
+    private static String extractPrice(Text.Line priceLine) {
+        return priceLine.getText().trim().replace(",", ".").replaceAll("\\s+", "");
     }
 }

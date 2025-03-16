@@ -218,6 +218,7 @@ fun CameraScreen(
     val textRecognitionResult by viewModel.textRecognitionResult.collectAsState()
     val parsedReceipt by viewModel.parsedReceipt.collectAsState()
     val parsedItems by viewModel.parsedItems.collectAsState()
+    var imageCapture = remember { mutableStateOf<ImageCapture?>(null) }
 
     // Handle recognized text
     LaunchedEffect(textRecognitionResult) {
@@ -230,7 +231,6 @@ fun CameraScreen(
     }
 
     if (hasCameraPermission) {
-        var imageCapture: ImageCapture? = null
 
         Box(modifier = Modifier.fillMaxSize()) {
             // Camera preview
@@ -249,7 +249,7 @@ fun CameraScreen(
                             it.setSurfaceProvider(previewView.surfaceProvider)
                         }
 
-                        imageCapture = ImageCapture.Builder()
+                        imageCapture.value = ImageCapture.Builder()
                             .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
                             .build()
 
@@ -261,7 +261,7 @@ fun CameraScreen(
                                 lifecycleOwner,
                                 cameraSelector,
                                 preview,
-                                imageCapture
+                                imageCapture.value
                             )
                         } catch (e: Exception) {
                             Log.e("CameraScreen", "Camera binding failed", e)
@@ -281,7 +281,7 @@ fun CameraScreen(
                     onClick = {
                         Log.e("CameraScreen", "Taking picture...")
                         Log.e("CameraScreen", "imageCapture: $imageCapture")
-                        imageCapture?.takePicture(
+                        imageCapture.value?.takePicture(
                             ContextCompat.getMainExecutor(context),
                             object : ImageCapture.OnImageCapturedCallback() {
                                 override fun onCaptureSuccess(imageProxy: ImageProxy) {
