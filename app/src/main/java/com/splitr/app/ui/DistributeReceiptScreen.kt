@@ -1,0 +1,202 @@
+package com.splitr.app.ui
+
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.splitr.app.data.ItemWithUsers
+import com.splitr.app.data.ReceiptWithItemsAndUsers
+import com.splitr.app.data.User
+
+@Composable
+fun DistributeReceiptScreen(
+    receiptWithItemsAndUsers: ReceiptWithItemsAndUsers,
+    onDone: () -> Unit,
+    onAddContributors: () -> Unit,
+    viewModel: DistributeReceiptViewModel = viewModel()
+) {
+    // State to hold the collaborators selected in this screen
+    val receiptContributors = viewModel.receiptContributors.collectAsState()
+    var selectedItemId by remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(receiptWithItemsAndUsers.receipt.id) {
+        viewModel.loadReceipt(receiptWithItemsAndUsers.receipt.id)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            "Distribute Receipt",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Show basic receipt information
+        Text("Receipt: ${receiptWithItemsAndUsers.receipt.name}")
+        Text("Date: ${receiptWithItemsAndUsers.receipt.date}")
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Display the list of items for context
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            LazyColumn(modifier = Modifier.padding(16.dp)) {
+                items(receiptWithItemsAndUsers.itemsWithUsers) { itemWithUsers ->
+                    ReceiptItemWithContributors(
+                        itemWithUsers = itemWithUsers,
+                        onItemClick = { selectedItemId = itemWithUsers.item.id },
+                        onContributorClick = { user ->
+                            viewModel.removeCollaboratorsOnItem(itemWithUsers.item.id, user.id)
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Section for collaborator selection.
+        // (You might later integrate a selection component here.)
+        Text(
+            "Selected Collaborators:",
+            fontWeight = FontWeight.Bold
+        )
+        if (receiptContributors.value.isNotEmpty()) {
+            Column(modifier = Modifier.padding(8.dp)) {
+                receiptContributors.value.forEach { collaborator ->
+                    CollaboratorItem(
+                        collaborator,
+                        onClick = ({
+                            viewModel.assignCollaboratorsOnItem(
+                                selectedItemId,
+                                collaborator.id
+                            )
+                        }),
+                        onDelete = ({ viewModel.deleteCollaborator(collaborator) })
+                    )
+                }
+            }
+        } else {
+            Text("No collaborators selected.", modifier = Modifier.padding(8.dp))
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Button to finalize distribution.
+        Button(
+            onClick = {
+                onAddContributors()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Add Contributors")
+        }
+
+        Button(
+            onClick = {
+                onDone()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Done")
+        }
+    }
+}
+
+@Composable
+fun ItemCollaboratorIcon(user: User, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .size(40.dp)  // Adjust the size as needed
+            .clip(CircleShape)
+            .border(width = 2.dp, color = Color.Gray, shape = CircleShape)
+            .clickable { onClick() },
+        shape = CircleShape,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = user.name.firstOrNull()?.toString() ?: "",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
+@Composable
+fun ReceiptItemWithContributors(
+    itemWithUsers: ItemWithUsers,
+    onItemClick: () -> Unit,
+    onContributorClick: (User) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onItemClick() },
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Item name on the left
+            Text(
+                text = itemWithUsers.item.name,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            // Spacer takes up all available space, pushing the icons to the right
+            Spacer(modifier = Modifier.weight(1f))
+            // Row for contributor icons on the right, spaced out as desired
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                itemWithUsers.users.forEach { user ->
+                    ItemCollaboratorIcon(
+                        user = user,
+                        onClick = { onContributorClick(user) }
+                    )
+                }
+            }
+        }
+    }
+}
