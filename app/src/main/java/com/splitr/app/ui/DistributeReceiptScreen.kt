@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -125,17 +127,31 @@ fun DistributeReceiptScreen(
                     .padding(8.dp)
                     .weight(1F)
             ) {
-                receiptContributors.value.forEach { collaborator ->
-                    CollaboratorItem(
-                        collaborator,
-                        onClick = ({
-                            viewModel.assignCollaboratorsOnItem(
-                                selectedItemId,
-                                collaborator.id
-                            )
-                        }),
-                        onDelete = ({ viewModel.deleteCollaborator(collaborator) })
-                    )
+//                receiptContributors.value.forEach { collaborator ->
+//                    CollaboratorItem(
+//                        collaborator,
+//                        onClick = ({
+//                            viewModel.assignCollaboratorsOnItem(
+//                                selectedItemId,
+//                                collaborator.id
+//                            )
+//                        }),
+//                        onDelete = ({ viewModel.deleteCollaborator(collaborator) })
+//                    )
+//                }
+                LazyColumn {
+                    items(receiptContributors.value) { collaborator ->
+                        CollaboratorItem(
+                            collaborator,
+                            onClick = ({
+                                viewModel.assignCollaboratorsOnItem(
+                                    selectedItemId,
+                                    collaborator.id
+                                )
+                            }),
+                            onDelete = ({ viewModel.deleteCollaborator(collaborator) })
+                        )
+                    }
                 }
             }
         } else {
@@ -171,7 +187,7 @@ fun DistributeReceiptScreen(
 fun ItemCollaboratorIcon(user: User, onClick: () -> Unit) {
     Card(
         modifier = Modifier
-            .size(40.dp)  // Adjust the size as needed
+            .size(36.dp)
             .clip(CircleShape)
             .border(width = 2.dp, color = Color.Gray, shape = CircleShape)
             .clickable { onClick() },
@@ -205,20 +221,20 @@ fun ReceiptItemWithContributors(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .height(48.dp)
+                .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Item name on the left
             Text(
                 text = itemWithUsers.item.name,
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
-            // Spacer takes up all available space, pushing the icons to the right
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(8.dp))
             // Row for contributor icons on the right, spaced out as desired
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                itemWithUsers.users.forEach { user ->
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(itemWithUsers.users) { user ->
                     ItemCollaboratorIcon(
                         user = user,
                         onClick = { onContributorClick(user) }

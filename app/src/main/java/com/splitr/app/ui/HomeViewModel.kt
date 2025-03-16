@@ -47,7 +47,15 @@ class HomeViewModel(
                 val items = listOf(
                     Item(receiptId = receiptId, name = "Pizza", price = 12.99, quantity = 1),
                     Item(receiptId = receiptId, name = "Soda", price = 2.50, quantity = 2),
-                    Item(receiptId = receiptId, name = "Burger", price = 8.99, quantity = 1)
+                    Item(receiptId = receiptId, name = "Burger", price = 8.99, quantity = 1),
+                    Item(receiptId = receiptId, name = "Pizza", price = 12.99, quantity = 1),
+                    Item(receiptId = receiptId, name = "Soda", price = 2.50, quantity = 2),
+                    Item(receiptId = receiptId, name = "Burger", price = 8.99, quantity = 1),
+                    Item(receiptId = receiptId, name = "Pizza", price = 12.99, quantity = 1),
+                    Item(receiptId = receiptId, name = "Soda", price = 2.50, quantity = 2),
+                    Item(receiptId = receiptId, name = "Burger", price = 8.99, quantity = 1),
+                    Item(receiptId = receiptId, name = "Pizza", price = 12.99, quantity = 1),
+                    Item(receiptId = receiptId, name = "Soda", price = 2.50, quantity = 2),
                 )
                 receiptDao.insertItems(items)
 

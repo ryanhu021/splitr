@@ -47,7 +47,6 @@ class CollaboratorsViewModel(
                 _selectedCollaborators.value = if (user in currentSelected) {
                     receiptDao.deleteUserReceiptCrossRef(UserReceiptCrossRef(user.id, receiptId))
                     _selectedCollaborators.value - user
-
                 } else {
                     receiptDao.insertUserReceiptCrossRef(UserReceiptCrossRef(user.id, receiptId))
                     _selectedCollaborators.value + user
