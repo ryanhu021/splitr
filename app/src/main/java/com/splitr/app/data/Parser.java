@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public class Parser {
 
     private static final Pattern PRICE_MATCHER = Pattern.compile("(?:^|[-–—])\\$?\\d{1,3}[.,]\\d{2}[-–—]?");
-    private static final Pattern DATE_MATCHER = Pattern.compile("\\b(?:\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}|\\d{1,2}[-/]\\d{1,2}[-/]\\d{2,4})\\b");
+    private static final Pattern DATE_MATCHER = Pattern.compile("\\b(?:\\d{4}[-–—./]\\d{1,2}[-–—./]\\d{1,2}|\\d{1,2}[-–—./]\\d{1,2}[-–—./]\\d{2,4})\\b");
 
     public static ParserResult parseReceipt(Text text, int receiptId) {
         List<ItemWithoutIds> items = new ArrayList<>();
@@ -28,13 +28,14 @@ public class Parser {
         for (Text.TextBlock block : text.getTextBlocks()) {
             // iterate through all lines in the block
             for (Text.Line line : block.getLines()) {
+                String noSpaces = line.getText().replaceAll("\\s+", "");
                 // try matching as price
-                Matcher priceMatcher = PRICE_MATCHER.matcher(line.getText().replaceAll("\\s+", ""));
+                Matcher priceMatcher = PRICE_MATCHER.matcher(noSpaces);
                 if (priceMatcher.find()) {
                     prices.add(line);
                 } else {
                     // if not price, try matching as date
-                    Matcher dateMatcher = DATE_MATCHER.matcher(line.getText());
+                    Matcher dateMatcher = DATE_MATCHER.matcher(noSpaces);
                     if (dateMatcher.find()) {
                         System.out.println("Found date: " + line.getText());
                         date = extractDate(line);
