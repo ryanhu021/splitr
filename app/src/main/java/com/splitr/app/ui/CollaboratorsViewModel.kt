@@ -1,5 +1,6 @@
 package com.splitr.app.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.splitr.app.data.ReceiptDao
@@ -36,6 +37,7 @@ class CollaboratorsViewModel(
         viewModelScope.launch {
             _selectedCollaborators.value = receiptDao.getUsersForReceiptById(receiptId)
         }
+        _selectedCollaborators.value.forEach { user -> _collaborators.value - user }
     }
 
     fun toggleSelectedCollaboratorSelection(user: User, receiptId: Int?) {
@@ -43,14 +45,16 @@ class CollaboratorsViewModel(
             val currentSelected = _selectedCollaborators.value
             viewModelScope.launch {
                 _selectedCollaborators.value = if (user in currentSelected) {
-                    receiptDao.insertUserReceiptCrossRef(UserReceiptCrossRef(user.id, receiptId))
-                    currentSelected - user
+                    receiptDao.deleteUserReceiptCrossRef(UserReceiptCrossRef(user.id, receiptId))
+                    _selectedCollaborators.value - user
 
                 } else {
                     receiptDao.insertUserReceiptCrossRef(UserReceiptCrossRef(user.id, receiptId))
-                    currentSelected + user
+                    _selectedCollaborators.value + user
                 }
             }
+            Log.e("Contributors", _selectedCollaborators.value.toString())
+
         }
     }
 
