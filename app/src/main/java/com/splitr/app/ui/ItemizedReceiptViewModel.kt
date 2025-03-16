@@ -26,7 +26,7 @@ class ItemizedReceiptViewModel(
 
     private fun loadReceipt(receiptId: Int) {
         viewModelScope.launch {
-            val receipt = receiptDao.getReceiptById(receiptId)
+            val receipt = receiptDao.getReceiptWithItemsById(receiptId)
             _receiptWithItems.value = receipt
         }
     }

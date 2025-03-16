@@ -35,26 +35,19 @@ interface ReceiptDao {
 
     @Transaction
     @Query("SELECT * FROM receipts WHERE id = :receiptId")
-    suspend fun getReceiptById(receiptId: Int): ReceiptWithItems
+    suspend fun getReceiptWithItemsById(receiptId: Int): ReceiptWithItems
 
     @Transaction
     @Query("SELECT * FROM receipts WHERE id = :receiptId")
-    suspend fun getReceiptWithUsersById(receiptId: Int): ReceiptWithItemsAndUsers
+    suspend fun getReceiptWithItemsAndUsersById(receiptId: Int): ReceiptWithItemsAndUsers
 
     @Transaction
     @Query("SELECT * FROM users")
     suspend fun getAllUsers(): List<User>
 
     @Transaction
-    @Query(
-        """
-        SELECT DISTINCT u.* FROM users u
-        INNER JOIN user_receipt_cross_refs uicr ON u.id = uicr.user_id
-        INNER JOIN items i ON uicr.id = i.id
-        WHERE i.receipt_id = :receiptId
-    """
-    )
-    suspend fun getUsersForReceiptById(receiptId: Int): List<User>
+    @Query("SELECT * FROM receipts WHERE id = :receiptId")
+    suspend fun getReceiptWithUsersById(receiptId: Int): ReceiptWithUsers
 
     @Delete
     suspend fun deleteUserReceiptCrossRef(userReceiptCrossRef: UserReceiptCrossRef)

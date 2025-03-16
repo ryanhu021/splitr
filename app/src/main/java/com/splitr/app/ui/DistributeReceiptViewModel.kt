@@ -29,10 +29,10 @@ class DistributeReceiptViewModel(
 
     fun loadReceipt(receiptId: Int) {
         viewModelScope.launch {
-            val receipt = receiptDao.getReceiptWithUsersById(receiptId)
+            val receipt = receiptDao.getReceiptWithItemsAndUsersById(receiptId)
             _receiptWithItemsAndUsers.value = receipt
 
-            _receiptContributors.value = receiptDao.getUsersForReceiptById(receiptId)
+            _receiptContributors.value = receiptDao.getReceiptWithUsersById(receiptId).users
         }
     }
 
@@ -52,8 +52,8 @@ class DistributeReceiptViewModel(
             }
 
             receiptDao.deleteUserReceiptCrossRef(UserReceiptCrossRef(user.id, receiptId))
-            _receiptContributors.value = receiptDao.getUsersForReceiptById(receiptId)
-            _receiptWithItemsAndUsers.value = receiptDao.getReceiptWithUsersById(receiptId)
+            _receiptContributors.value = receiptDao.getReceiptWithUsersById(receiptId).users
+            _receiptWithItemsAndUsers.value = receiptDao.getReceiptWithItemsAndUsersById(receiptId)
         }
     }
 
@@ -65,7 +65,7 @@ class DistributeReceiptViewModel(
             if (itemWithUsers != null && itemWithUsers.users.none { it.id == userId }) {
                 viewModelScope.launch {
                     receiptDao.insertUserItemCrossRef(UserItemCrossRef(userId, itemId))
-                    _receiptWithItemsAndUsers.value = receiptDao.getReceiptWithUsersById(receiptId)
+                    _receiptWithItemsAndUsers.value = receiptDao.getReceiptWithItemsAndUsersById(receiptId)
                 }
             }
         }
@@ -74,7 +74,7 @@ class DistributeReceiptViewModel(
     fun removeCollaboratorsOnItem(itemId: Int, userId: Int) {
         viewModelScope.launch {
             receiptDao.deleteUserItemCrossRef(UserItemCrossRef(userId, itemId))
-            _receiptWithItemsAndUsers.value = receiptDao.getReceiptWithUsersById(receiptId)
+            _receiptWithItemsAndUsers.value = receiptDao.getReceiptWithItemsAndUsersById(receiptId)
         }
     }
 

@@ -35,9 +35,9 @@ class CollaboratorsViewModel(
 
     private fun loadSelectedCollaborators(receiptId: Int) {
         viewModelScope.launch {
-            _selectedCollaborators.value = receiptDao.getUsersForReceiptById(receiptId)
+            _selectedCollaborators.value = receiptDao.getReceiptWithUsersById(receiptId).users
+            _selectedCollaborators.value.forEach { user -> _collaborators.value - user }
         }
-        _selectedCollaborators.value.forEach { user -> _collaborators.value - user }
     }
 
     fun toggleSelectedCollaboratorSelection(user: User, receiptId: Int?) {
@@ -53,8 +53,6 @@ class CollaboratorsViewModel(
                     _selectedCollaborators.value + user
                 }
             }
-            Log.e("Contributors", _selectedCollaborators.value.toString())
-
         }
     }
 
