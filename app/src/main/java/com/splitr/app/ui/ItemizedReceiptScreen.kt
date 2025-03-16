@@ -9,12 +9,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -89,32 +94,51 @@ fun ItemizedReceiptScreen(
                 .padding(8.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                LazyColumn {
+                LazyColumn(modifier = Modifier.weight(1F)) {
                     items(editableItems) { item ->
-                        ItemRow(item) { updatedItem ->
-                            editableItems = editableItems.map {
-                                if (it.id == updatedItem.id) updatedItem else it
+                        ItemRow(item,
+                            onItemChange = { updatedItem ->
+                                editableItems = editableItems.map {
+                                    if (it.id == updatedItem.id) updatedItem else it
+                                }
+                                viewModel.updateItems(editableItems)
+                            },
+                            onDelete = {
+                                editableItems = editableItems.filter { it.id != item.id }
+                                viewModel.updateItems(editableItems)
                             }
-                            viewModel.updateItems(editableItems)
-                        }
+                        )
                     }
-                    item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp)
-                        ) {
-                            Text(
-                                "Total",
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text(
-                                "${'$'}${receiptWithItems.receipt.totalAmount}",
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                }
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        val newItem = Item(
+                            receiptId = receiptWithItems.receipt.id,
+                            name = "",
+                            price = 0.0,
+                            quantity = 1
+                        )
+                        editableItems = editableItems + newItem
+                        viewModel.updateItems(editableItems)
                     }
+                ) {
+                    Text("Add Item")
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    Text(
+                        "Total",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        "${'$'}${"%.2f".format(receiptWithItems.receipt.totalAmount)}",
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -152,13 +176,15 @@ fun ItemizedReceiptScreen(
 @Composable
 fun ItemRow(
     item: Item,
-    onItemChange: (Item) -> Unit
+    onItemChange: (Item) -> Unit,
+    onDelete: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(2f)) {
             TextField(
@@ -168,19 +194,10 @@ fun ItemRow(
                 label = { Text("Item Name") },
                 textStyle = TextStyle.Default.copy(fontWeight = FontWeight.Medium)
             )
-//            TextField(
-//                value = item.quantity.toString(),
-//                onValueChange = {
-//                    onItemChange(item.copy(quantity = it.toIntOrNull() ?: 0))
-//                },
-//                modifier = Modifier.fillMaxWidth(),
-//                label = { Text("Quantity") },
-//                textStyle = TextStyle.Default.copy(fontSize = 14.sp)
-//            )
         }
         Spacer(modifier = Modifier.width(16.dp))
         TextField(
-            value = "${'$'}${item.price}",
+            value = "${'$'}${"%.2f".format(item.price)}",
             onValueChange = {
                 val priceString = it.removePrefix("$")
                 priceString.toDoubleOrNull()?.let { price ->
@@ -191,5 +208,16 @@ fun ItemRow(
             label = { Text("Price") },
             textStyle = TextStyle.Default.copy(fontWeight = FontWeight.Bold)
         )
+        IconButton(
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .size(24.dp),
+            onClick = onDelete
+        ) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Delete Item"
+            )
+        }
     }
 }
