@@ -101,11 +101,25 @@ fun SplitrApp() {
                         navController.navigate(Routes.Home)
                     },
                     onViewBreakdown = {
-                        // TODO: Navigate to breakdown screen
+                        navController.navigate(Routes.ReceiptBreakdown(details.receiptId))
                     },
                     onAddContributors = {
                         navController.navigate(Routes.Collaborators(details.receiptId))
                     },
+                )
+            }
+        }
+        composable<Routes.ReceiptBreakdown> { backStackEntry ->
+            val details: Routes.ReceiptBreakdown = backStackEntry.toRoute()
+            val viewModel: ReceiptBreakdownViewModel = viewModel {
+                ReceiptBreakdownViewModel(receiptDao, details.receiptId)
+            }
+            val receiptWithItemsAndUsers by viewModel.receiptWithItemsAndUsers.collectAsState()
+
+            receiptWithItemsAndUsers?.let{
+                ReceiptBreakdownScreen(
+                    receiptWithItemsAndUsers = it,
+                    onDone = { navController.navigate(Routes.Home) },
                 )
             }
         }

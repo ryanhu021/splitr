@@ -14,6 +14,10 @@ class ReceiptBreakdownViewModel(
     private val receiptId: Int
 ) : ViewModel() {
 
+    private val _receiptWithItemsAndUsers = MutableStateFlow<ReceiptWithItemsAndUsers?>(null)
+    val receiptWithItemsAndUsers: MutableStateFlow<ReceiptWithItemsAndUsers?> =
+        _receiptWithItemsAndUsers
+
     private val _receiptWithAmounts = MutableStateFlow<Map<User, Double>>(emptyMap())
     val receiptWithAmounts: MutableStateFlow<Map<User, Double>> = _receiptWithAmounts
 
@@ -24,6 +28,7 @@ class ReceiptBreakdownViewModel(
     private fun fetchReceiptBreakdown() {
         viewModelScope.launch {
             val receiptWithItemsAndUsers = receiptDao.getReceiptWithItemsAndUsersById(receiptId)
+            _receiptWithItemsAndUsers.value = receiptWithItemsAndUsers
             _receiptWithAmounts.value = calculateAmounts(receiptWithItemsAndUsers)
         }
     }
