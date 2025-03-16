@@ -83,7 +83,8 @@ public class Parser {
                 items.get(items.size() - 1).setPrice(discountedValue);
             } else {
                 // otherwise add as new item
-                items.add(new Item(items.size(), receiptId, closestLine.getText().trim(), Double.parseDouble(extractPrice(price)), 1));
+                // item ids start at 1
+                items.add(new Item(items.size() + 1, receiptId, closestLine.getText().trim(), Double.parseDouble(extractPrice(price)), 1));
             }
         }
 
