@@ -663,7 +663,11 @@ fun DistributeReceiptScreen(
     viewModel: DistributeReceiptViewModel = viewModel()
 ) {
     // State to hold the collaborators selected in this screen
-    var selectedCollaborators by remember { mutableStateOf<List<User>>(emptyList()) }
+    val receiptContributors = viewModel.receiptContributors.collectAsState()
+
+    LaunchedEffect(receiptWithItemsAndUsers.receipt.id) {
+        viewModel.loadReceipt(receiptWithItemsAndUsers.receipt.id)
+    }
 
     Column(
         modifier = Modifier
@@ -703,9 +707,9 @@ fun DistributeReceiptScreen(
             "Selected Collaborators:",
             fontWeight = FontWeight.Bold
         )
-        if (selectedCollaborators.isNotEmpty()) {
+        if (receiptContributors.value.isNotEmpty()) {
             Column(modifier = Modifier.padding(8.dp)) {
-                selectedCollaborators.forEach { collaborator ->
+                receiptContributors.value.forEach { collaborator ->
                     Text(collaborator.name)
                 }
             }

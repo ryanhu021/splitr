@@ -49,7 +49,7 @@ interface ReceiptDao {
     @Query(
         """
         SELECT DISTINCT u.* FROM users u
-        INNER JOIN user_item_cross_refs uicr ON u.id = uicr.user_id
+        INNER JOIN user_receipt_cross_refs uicr ON u.id = uicr.user_id
         INNER JOIN items i ON uicr.id = i.id
         WHERE i.receipt_id = :receiptId
     """

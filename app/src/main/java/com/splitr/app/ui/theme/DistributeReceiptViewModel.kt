@@ -4,9 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.splitr.app.data.ReceiptDao
 import com.splitr.app.data.ReceiptWithItemsAndUsers
+import com.splitr.app.data.User
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class DistributeReceiptViewModel(
@@ -15,8 +14,11 @@ class DistributeReceiptViewModel(
 ) : ViewModel() {
 
     private val _receiptWithItemsAndUsers = MutableStateFlow<ReceiptWithItemsAndUsers?>(null)
-    val receiptWithItemsAndUsers: StateFlow<ReceiptWithItemsAndUsers?> =
-        _receiptWithItemsAndUsers.asStateFlow()
+    val receiptWithItemsAndUsers: MutableStateFlow<ReceiptWithItemsAndUsers?> =
+        _receiptWithItemsAndUsers
+
+    private val _receiptContributors = MutableStateFlow<List<User>>(emptyList())
+    val receiptContributors: MutableStateFlow<List<User>> = _receiptContributors
 
     init {
         receiptId?.let {
@@ -24,10 +26,12 @@ class DistributeReceiptViewModel(
         }
     }
 
-    private fun loadReceipt(receiptId: Int) {
+    fun loadReceipt(receiptId: Int) {
         viewModelScope.launch {
             val receipt = receiptDao.getReceiptWithUsersById(receiptId)
             _receiptWithItemsAndUsers.value = receipt
+
+            _receiptContributors.value = receiptDao.getUsersForReceiptById(receiptId)
         }
     }
 
