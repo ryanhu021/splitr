@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -120,10 +121,18 @@ fun SplitrApp() {
             }
         }
         composable<Routes.Camera> {
+            val viewModel: CameraViewModel = viewModel {
+                CameraViewModel(receiptDao)
+            }
+
             CameraScreen(
+                viewModel = viewModel,
                 onTextRecognized = { recognizedText ->
                     Log.e("CameraScreen", recognizedText)
                     println(recognizedText)
+                },
+                onReceiptProcessed = { receiptId ->
+                    navController.navigate(Routes.ItemizedReceipt(receiptId))
                 }
             )
         }
@@ -178,8 +187,9 @@ fun HomeScreen(
 @Composable
 fun CameraScreen(
     onTextRecognized: (String) -> Unit,
+    onReceiptProcessed: (Int) -> Unit,
     viewModel: CameraViewModel = viewModel(),
-    homeViewModel: HomeViewModel = viewModel()
+//    homeViewModel: HomeViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -269,11 +279,14 @@ fun CameraScreen(
             ) {
                 Button(
                     onClick = {
+                        Log.e("CameraScreen", "Taking picture...")
+                        Log.e("CameraScreen", "imageCapture: $imageCapture")
                         imageCapture?.takePicture(
                             ContextCompat.getMainExecutor(context),
                             object : ImageCapture.OnImageCapturedCallback() {
                                 override fun onCaptureSuccess(imageProxy: ImageProxy) {
-                                    viewModel.processImage(imageProxy)
+                                    Log.e("CameraScreen", "Image captured")
+                                    viewModel.processImage(imageProxy, onReceiptProcessed)
                                 }
 
                                 override fun onError(exception: ImageCaptureException) {
@@ -292,28 +305,28 @@ fun CameraScreen(
             }
         }
 
-        parsedReceipt?.let { receipt ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text("Store: ${receipt.name}")
-                Text("Date: ${receipt.date}")
-                Text("Total: $${receipt.totalAmount}")
-
-                parsedItems.forEach { item ->
-                    Text("${item.name} - $${item.price} x ${item.quantity}")
-                }
-
-                Button(onClick = {
-                    homeViewModel.addReceipt(receipt, parsedItems)
-                    viewModel.clearResult()
-                }) {
-                    Text("Save Receipt")
-                }
-            }
-        }
+//        parsedReceipt?.let { receipt ->
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(16.dp)
+//            ) {
+//                Text("Store: ${receipt.name}")
+//                Text("Date: ${receipt.date}")
+//                Text("Total: $${receipt.totalAmount}")
+//
+//                parsedItems.forEach { item ->
+//                    Text("${item.name} - $${item.price} x ${item.quantity}")
+//                }
+//
+//                Button(onClick = {
+//                    homeViewModel.addReceipt(receipt, parsedItems)
+//                    viewModel.clearResult()
+//                }) {
+//                    Text("Save Receipt")
+//                }
+//            }
+//        }
     } else {
         Column(
             modifier = Modifier
@@ -339,7 +352,7 @@ fun ItemizedReceiptScreen(
     onDoneClick: () -> Unit,
     viewModel: ItemizedReceiptViewModel = viewModel()
 ) {
-    var editableItems by remember { mutableStateOf(receiptWithItems?.items ?: emptyList()) }
+    var editableItems by remember { mutableStateOf(receiptWithItems.items) }
 
     Column(
         modifier = Modifier
@@ -387,6 +400,30 @@ fun ItemizedReceiptScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { /* TODO: Implement collaborator edit action */ }
+        ) {
+            Text("Next")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+            onClick = {
+                viewModel.deleteReceipt(receiptWithItems.receipt)
+                onDoneClick()
+            }
+        ) {
+            Text("Delete Receipt", color = Color.White)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Button to save changes
         Button(
             modifier = Modifier.fillMaxWidth(),
             onClick = {
@@ -398,6 +435,7 @@ fun ItemizedReceiptScreen(
         }
     }
 }
+
 
 @Composable
 fun ReceiptItem(
@@ -444,15 +482,15 @@ fun ItemRow(
                 label = { Text("Item Name") },
                 textStyle = TextStyle.Default.copy(fontWeight = FontWeight.Medium)
             )
-            TextField(
-                value = item.quantity.toString(),
-                onValueChange = {
-                    onItemChange(item.copy(quantity = it.toIntOrNull() ?: 0))
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Quantity") },
-                textStyle = TextStyle.Default.copy(fontSize = 14.sp)
-            )
+//            TextField(
+//                value = item.quantity.toString(),
+//                onValueChange = {
+//                    onItemChange(item.copy(quantity = it.toIntOrNull() ?: 0))
+//                },
+//                modifier = Modifier.fillMaxWidth(),
+//                label = { Text("Quantity") },
+//                textStyle = TextStyle.Default.copy(fontSize = 14.sp)
+//            )
         }
         Spacer(modifier = Modifier.width(16.dp))
         TextField(

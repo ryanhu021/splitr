@@ -3,6 +3,7 @@ package com.splitr.app.ui.theme
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.splitr.app.data.Item
+import com.splitr.app.data.Receipt
 import kotlinx.coroutines.launch
 
 import com.splitr.app.data.ReceiptDao
@@ -40,6 +41,12 @@ class ItemizedReceiptViewModel(
 
     fun setNewReceipt(receipt: ReceiptWithItems) {
         _receiptWithItems.value = receipt
+    }
+
+    fun deleteReceipt(receipt: Receipt) {
+        viewModelScope.launch {
+            receiptDao.deleteReceipt(receipt)
+        }
     }
 
 }

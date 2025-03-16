@@ -7,9 +7,8 @@ import com.google.mlkit.vision.text.Text;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class Parser {
-    public static List<Item> parseReceipt(Text text, int receiptId) {
+    public static ParserResult parseReceipt(Text text, int receiptId) {
         List<Item> items = new ArrayList<>();
         List<Text.Line> prices = new ArrayList<>();
         String priceRegex = "\\$\\d{1,3}(?:[.,]\\d{2})";
@@ -64,6 +63,7 @@ public class Parser {
             items.add(item);
         }
 
-        return items;
+        // create new ParserResult
+        return new ParserResult("Trader Joe's", "2025-03-15", Double.parseDouble(lastPrice), items);
     }
 }
