@@ -59,9 +59,14 @@ class DistributeReceiptViewModel(
 
     fun assignCollaboratorsOnItem(itemId: Int?, userId: Int) {
         if (itemId != null) {
-            viewModelScope.launch {
-                receiptDao.insertUserItemCrossRef(UserItemCrossRef(userId, itemId))
-                _receiptWithItemsAndUsers.value = receiptDao.getReceiptWithUsersById(receiptId)
+            val itemWithUsers = _receiptWithItemsAndUsers.value?.itemsWithUsers?.firstOrNull {
+                it.item.id == itemId
+            }
+            if (itemWithUsers != null && itemWithUsers.users.none { it.id == userId }) {
+                viewModelScope.launch {
+                    receiptDao.insertUserItemCrossRef(UserItemCrossRef(userId, itemId))
+                    _receiptWithItemsAndUsers.value = receiptDao.getReceiptWithUsersById(receiptId)
+                }
             }
         }
     }
