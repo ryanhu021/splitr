@@ -38,16 +38,18 @@ class CollaboratorsViewModel(
         }
     }
 
-    fun toggleSelectedCollaboratorSelection(user: User, receiptId: Int) {
-        val currentSelected = _selectedCollaborators.value
-        viewModelScope.launch {
-            _selectedCollaborators.value = if (user in currentSelected) {
-                receiptDao.insertUserReceiptCrossRef(UserReceiptCrossRef(user.id, receiptId))
-                currentSelected - user
+    fun toggleSelectedCollaboratorSelection(user: User, receiptId: Int?) {
+        if (receiptId != null) {
+            val currentSelected = _selectedCollaborators.value
+            viewModelScope.launch {
+                _selectedCollaborators.value = if (user in currentSelected) {
+                    receiptDao.insertUserReceiptCrossRef(UserReceiptCrossRef(user.id, receiptId))
+                    currentSelected - user
 
-            } else {
-                receiptDao.insertUserReceiptCrossRef(UserReceiptCrossRef(user.id, receiptId))
-                currentSelected + user
+                } else {
+                    receiptDao.insertUserReceiptCrossRef(UserReceiptCrossRef(user.id, receiptId))
+                    currentSelected + user
+                }
             }
         }
     }
@@ -67,6 +69,10 @@ class CollaboratorsViewModel(
             if (_selectedCollaborators.value.contains(user))
                 _selectedCollaborators.value -= user
         }
+    }
+
+    fun toggleCollaboratorSelection(user: User) {
+
     }
 
 //    fun addCollaboratorToReceipt(user: User) {

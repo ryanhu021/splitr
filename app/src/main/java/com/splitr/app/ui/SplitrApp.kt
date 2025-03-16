@@ -12,6 +12,7 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -176,6 +178,7 @@ fun SplitrApp() {
             }
 
             CollaboratorsScreen(
+                details.receiptId,
                 onBack = { navController.navigateUp() },
                 viewModel
             )
@@ -551,10 +554,12 @@ fun ItemRow(
 
 @Composable
 fun CollaboratorsScreen(
+    receiptId: Int?,
     onBack: () -> Unit,
     viewModel: CollaboratorsViewModel = viewModel()
 ) {
     val collaborators by viewModel.collaborators.collectAsState()
+    val selectedCollaborators by viewModel.selectedCollaborators.collectAsState()
 
     var showAddDialog by remember { mutableStateOf(false) }
     var newCollaboratorName by remember { mutableStateOf("") }
@@ -569,14 +574,44 @@ fun CollaboratorsScreen(
         Text("Manage Collaborators", fontSize = 24.sp, fontWeight = FontWeight.Bold)
 
         Spacer(modifier = Modifier.height(16.dp))
-
+        if (receiptId != null) {
+            Button(
+                onClick = { onBack() },
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text("Back", fontSize = 24.sp)
+            }
+            if (selectedCollaborators.isNotEmpty()) {
+                Text("Selected Collaborators", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(8.dp))
+                LazyColumn {
+                    items(selectedCollaborators) { user ->
+                        CollaboratorItem(
+                            user = user,
+                            onClick = {
+                                viewModel.toggleSelectedCollaboratorSelection(
+                                    user,
+                                    receiptId
+                                )
+                            },
+                            onDelete = { viewModel.deleteCollaborator(user) }
+                        )
+                    }
+                }
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            }
+            Text("Available Collaborators", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(8.dp))
+        }
         // Collaborators List
         LazyColumn(
             modifier = Modifier.weight(1f)
         ) {
-            items(collaborators) { user ->
+            items(collaborators.filter { it !in selectedCollaborators }) { user ->
                 CollaboratorItem(
                     user = user,
+                    onClick = { viewModel.toggleSelectedCollaboratorSelection(user, receiptId) },
                     onDelete = { viewModel.deleteCollaborator(user) }
                 )
             }
@@ -735,12 +770,14 @@ fun AddCollaboratorDialog(
 @Composable
 fun CollaboratorItem(
     user: User,
+    onClick: () -> Unit,
     onDelete: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp)
+            .clickable { onClick() },
     ) {
         Row(
             modifier = Modifier
