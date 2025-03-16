@@ -74,8 +74,6 @@ import com.splitr.app.data.Receipt
 import com.splitr.app.data.ReceiptWithItems
 import com.splitr.app.data.ReceiptWithItemsAndUsers
 import com.splitr.app.data.User
-import com.splitr.app.ui.theme.DistributeReceiptViewModel
-import com.splitr.app.ui.theme.ItemizedReceiptViewModel
 import kotlinx.serialization.Serializable
 
 sealed class Routes {
@@ -226,6 +224,32 @@ fun HomeScreen(
         LazyColumn {
             items(receipts) { receiptWithItems ->
                 ReceiptItem(receiptWithItems.receipt, onEditReceipt)
+            }
+        }
+    }
+}
+
+@Composable
+fun ReceiptItem(
+    receipt: Receipt,
+    onEditReceipt: (Int) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(receipt.name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(receipt.date)
+                Text("Total: ${'$'}${receipt.totalAmount}")
+            }
+            IconButton(onClick = { onEditReceipt(receipt.id) }) {
+                Icon(Icons.Filled.Edit, contentDescription = "Edit Receipt", tint = Color.Gray)
             }
         }
     }
@@ -401,20 +425,49 @@ fun ItemizedReceiptScreen(
     viewModel: ItemizedReceiptViewModel = viewModel()
 ) {
     var editableItems by remember { mutableStateOf(receiptWithItems.items) }
+    var updatedName by remember { mutableStateOf(receiptWithItems.receipt.name) }
+    var updatedDate by remember { mutableStateOf(receiptWithItems.receipt.date) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Receipt Details", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        Text("Date: ${receiptWithItems.receipt.date}")
+        Text("Receipt Details", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+
+        TextField(
+            value = updatedName,
+            onValueChange = { newName ->
+                updatedName = newName
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            label = { Text("Name") },
+            textStyle = TextStyle.Default.copy(fontWeight = FontWeight.Medium)
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        TextField(
+            value = updatedDate,
+            onValueChange = { newDate ->
+                updatedDate = newDate
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            label = { Text("Date") },
+            textStyle = TextStyle.Default.copy(fontWeight = FontWeight.Medium)
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Card(
             modifier = Modifier
                 .fillMaxWidth()
+                .weight(1F)
                 .padding(8.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -447,67 +500,34 @@ fun ItemizedReceiptScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Column {
+                Spacer(modifier = Modifier.height(8.dp))
 
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = { /* TODO: Implement collaborator edit action */
-                onNext(receiptWithItems.receipt.id)
-            }
-        ) {
-            Text("Next")
-        }
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    onClick = {
+                        viewModel.deleteReceipt(receiptWithItems.receipt)
+                        onDoneClick()
+                    }
+                ) {
+                    Text("Delete Receipt", color = Color.White)
+                }
 
-        Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-            onClick = {
-                viewModel.deleteReceipt(receiptWithItems.receipt)
-                onDoneClick()
-            }
-        ) {
-            Text("Delete Receipt", color = Color.White)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Button to save changes
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                viewModel.updateItems(editableItems)
-                onDoneClick()
-            }
-        ) {
-            Text("Done")
-        }
-    }
-}
-
-
-@Composable
-fun ReceiptItem(
-    receipt: Receipt,
-    onEditReceipt: (Int) -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(receipt.name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Text(receipt.date)
-                Text("Total: ${'$'}${receipt.totalAmount}")
-            }
-            IconButton(onClick = { onEditReceipt(receipt.id) }) {
-                Icon(Icons.Filled.Edit, contentDescription = "Edit Receipt", tint = Color.Gray)
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { /* TODO: Implement collaborator edit action */
+                        viewModel.updateItems(editableItems)
+                        viewModel.updateReceiptName(updatedName)
+                        viewModel.updateReceiptDate(updatedDate)
+                        onNext(receiptWithItems.receipt.id)
+                    }
+                ) {
+                    Text("Next")
+                }
             }
         }
     }

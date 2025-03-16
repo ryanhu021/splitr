@@ -1,4 +1,4 @@
-package com.splitr.app.ui.theme
+package com.splitr.app.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
