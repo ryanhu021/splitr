@@ -32,6 +32,11 @@ sealed class Routes {
     )
 
     @Serializable
+    data class ReceiptBreakdown(
+        val receiptId: Int
+    )
+
+    @Serializable
     data class Collaborators(
         val receiptId: Int? = null
     )
