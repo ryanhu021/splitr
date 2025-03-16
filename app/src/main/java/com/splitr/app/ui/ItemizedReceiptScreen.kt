@@ -55,6 +55,7 @@ fun ItemizedReceiptScreen(
         TextField(
             value = updatedName,
             onValueChange = { newName ->
+                viewModel.updateReceiptName(newName)
                 updatedName = newName
             },
             modifier = Modifier
@@ -69,6 +70,7 @@ fun ItemizedReceiptScreen(
         TextField(
             value = updatedDate,
             onValueChange = { newDate ->
+                viewModel.updateReceiptDate(newDate)
                 updatedDate = newDate
             },
             modifier = Modifier
@@ -93,6 +95,7 @@ fun ItemizedReceiptScreen(
                             editableItems = editableItems.map {
                                 if (it.id == updatedItem.id) updatedItem else it
                             }
+                            viewModel.updateItems(editableItems)
                         }
                     }
                     item {
@@ -135,10 +138,7 @@ fun ItemizedReceiptScreen(
 
                 Button(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { /* TODO: Implement collaborator edit action */
-                        viewModel.updateItems(editableItems)
-                        viewModel.updateReceiptName(updatedName)
-                        viewModel.updateReceiptDate(updatedDate)
+                    onClick = {
                         onNext(receiptWithItems.receipt.id)
                     }
                 ) {

@@ -89,6 +89,10 @@ fun SplitrApp() {
                 DistributeReceiptScreen(
                     receiptWithItemsAndUsers = it,
                     onDone = { // TODO: Aggregate total page
+                        navController.navigate(Routes.Home)
+                    },
+                    onViewBreakdown = {
+                        // TODO: Navigate to breakdown screen
                     },
                     onAddContributors = {
                         navController.navigate(Routes.Collaborators(details.receiptId))

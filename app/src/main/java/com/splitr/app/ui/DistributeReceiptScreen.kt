@@ -15,9 +15,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +45,7 @@ import com.splitr.app.data.User
 fun DistributeReceiptScreen(
     receiptWithItemsAndUsers: ReceiptWithItemsAndUsers,
     onDone: () -> Unit,
+    onViewBreakdown: () -> Unit,
     onAddContributors: () -> Unit,
     viewModel: DistributeReceiptViewModel = viewModel()
 ) {
@@ -56,11 +60,12 @@ fun DistributeReceiptScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             "Distribute Receipt",
-            fontSize = 20.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -74,6 +79,7 @@ fun DistributeReceiptScreen(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
+                .weight(1F)
                 .padding(8.dp)
         ) {
             LazyColumn(modifier = Modifier.padding(16.dp)) {
@@ -92,13 +98,33 @@ fun DistributeReceiptScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Section for collaborator selection.
-        // (You might later integrate a selection component here.)
-        Text(
-            "Selected Collaborators:",
-            fontWeight = FontWeight.Bold
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Selected Collaborators:",
+                fontWeight = FontWeight.Bold
+            )
+            Button(
+                onClick = {
+                    onAddContributors()
+                },
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Contributors",
+                    tint = Color.White,
+                )
+            }
+        }
         if (receiptContributors.value.isNotEmpty()) {
-            Column(modifier = Modifier.padding(8.dp)) {
+            Column(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .weight(1F)
+            ) {
                 receiptContributors.value.forEach { collaborator ->
                     CollaboratorItem(
                         collaborator,
@@ -118,23 +144,25 @@ fun DistributeReceiptScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Button to finalize distribution.
-        Button(
-            onClick = {
-                onAddContributors()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Add Contributors")
-        }
-
-        Button(
-            onClick = {
-                onDone()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Done")
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Column {
+                Button(
+                    onClick = {
+                        onViewBreakdown()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("View Breakdown")
+                }
+                Button(
+                    onClick = {
+                        onDone()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Done")
+                }
+            }
         }
     }
 }
