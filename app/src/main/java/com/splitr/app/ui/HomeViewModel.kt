@@ -1,19 +1,21 @@
 package com.splitr.app.ui
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.splitr.app.data.AppDatabase
 import com.splitr.app.data.Item
 import com.splitr.app.data.Receipt
+import com.splitr.app.data.ReceiptDao
 import com.splitr.app.data.ReceiptWithItems
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class HomeViewModel(application: Application) : AndroidViewModel(application) {
-    private val receiptDao = AppDatabase.getDatabase(application).receiptDao()
-
-    var receiptList = MutableLiveData<List<ReceiptWithItems>>()
+class HomeViewModel(
+    private val receiptDao: ReceiptDao,
+) : ViewModel() {
+    private val _receiptList = MutableStateFlow<List<ReceiptWithItems>>(emptyList())
+    var receiptList = _receiptList.asStateFlow()
 
     init {
         loadReceipts()
@@ -22,7 +24,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun loadReceipts() {
         viewModelScope.launch {
-            receiptList.value = receiptDao.getAllReceipts()
+            _receiptList.value = receiptDao.getAllReceipts()
         }
     }
 

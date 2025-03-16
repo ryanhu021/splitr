@@ -51,12 +51,16 @@ fun SplitrApp() {
         startDestination = Routes.Home
     ) {
         composable<Routes.Home> {
+            val viewModel: HomeViewModel = viewModel {
+                HomeViewModel(receiptDao)
+            }
             HomeScreen(
                 onEditReceipt = { receiptId ->
                     navController.navigate(Routes.ItemizedReceipt(receiptId))
                 },
                 onScanReceipt = { navController.navigate(Routes.Camera) },
-                onManageCollaborators = { navController.navigate(Routes.Collaborators()) }
+                onManageCollaborators = { navController.navigate(Routes.Collaborators()) },
+                viewModel
             )
         }
         composable<Routes.ItemizedReceipt> { backstackEntry ->
