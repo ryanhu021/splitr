@@ -1,6 +1,12 @@
 package com.splitr.app.data
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Update
 
 @Dao
 interface ReceiptDao {
@@ -15,6 +21,9 @@ interface ReceiptDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUserItemCrossRef(userItemCrossRef: UserItemCrossRef)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertUserReceiptCrossRef(userReceiptCrossRef: UserReceiptCrossRef)
 
     @Transaction
     @Query("SELECT * FROM receipts ORDER BY date DESC")
@@ -35,6 +44,20 @@ interface ReceiptDao {
     @Transaction
     @Query("SELECT * FROM users")
     suspend fun getAllUsers(): List<User>
+
+    @Transaction
+    @Query(
+        """
+        SELECT DISTINCT u.* FROM users u
+        INNER JOIN user_item_cross_refs uicr ON u.id = uicr.user_id
+        INNER JOIN items i ON uicr.id = i.id
+        WHERE i.receipt_id = :receiptId
+    """
+    )
+    suspend fun getUsersForReceiptById(receiptId: Int): List<User>
+
+    @Delete
+    suspend fun deleteUserReceiptCrossRef(userReceiptCrossRef: UserReceiptCrossRef)
 
     @Delete
     suspend fun deleteReceipt(receipt: Receipt)

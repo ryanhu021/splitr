@@ -4,17 +4,26 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.splitr.app.data.ReceiptDao
 import com.splitr.app.data.User
+import com.splitr.app.data.UserReceiptCrossRef
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 class CollaboratorsViewModel(
-    private val receiptDao: ReceiptDao
+    private val receiptDao: ReceiptDao,
+    private val receiptId: Int?
 ) : ViewModel() {
     private val _collaborators = MutableStateFlow<List<User>>(emptyList())
     val collaborators: MutableStateFlow<List<User>> = _collaborators
 
+    private val _selectedCollaborators = MutableStateFlow<List<User>>(emptyList())
+    val selectedCollaborators: MutableStateFlow<List<User>> = _selectedCollaborators
+
     init {
         loadCollaborators()
+
+        receiptId?.let { id ->
+            loadSelectedCollaborators(id)
+        }
     }
 
     private fun loadCollaborators() {
@@ -22,6 +31,27 @@ class CollaboratorsViewModel(
             _collaborators.value = receiptDao.getAllUsers()
         }
     }
+
+    private fun loadSelectedCollaborators(receiptId: Int) {
+        viewModelScope.launch {
+            _selectedCollaborators.value = receiptDao.getUsersForReceiptById(receiptId)
+        }
+    }
+
+    fun toggleSelectedCollaboratorSelection(user: User, receiptId: Int) {
+        val currentSelected = _selectedCollaborators.value
+        viewModelScope.launch {
+            _selectedCollaborators.value = if (user in currentSelected) {
+                receiptDao.insertUserReceiptCrossRef(UserReceiptCrossRef(user.id, receiptId))
+                currentSelected - user
+
+            } else {
+                receiptDao.insertUserReceiptCrossRef(UserReceiptCrossRef(user.id, receiptId))
+                currentSelected + user
+            }
+        }
+    }
+
 
     fun addCollaborator(user: User) {
         viewModelScope.launch {
@@ -34,6 +64,14 @@ class CollaboratorsViewModel(
         viewModelScope.launch {
             receiptDao.deleteUser(user)
             _collaborators.value -= user
+            if (_selectedCollaborators.value.contains(user))
+                _selectedCollaborators.value -= user
         }
     }
+
+//    fun addCollaboratorToReceipt(user: User) {
+//        viewModelScope.launch {
+//            receiptDao.insertUserItemCrossRef()
+//        }
+//    }
 }

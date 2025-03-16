@@ -7,6 +7,7 @@ import androidx.room.Junction
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 
+
 @Entity(tableName = "receipts")
 data class Receipt(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
@@ -32,11 +33,50 @@ data class User(
 
 @Entity(
     tableName = "user_item_cross_refs",
-    primaryKeys = ["user_id", "id"]
+    primaryKeys = ["user_id", "id"],
+    // TODO: Double check this -> Used for automatic clean up in case the item or user is deleted
+//    foreignKeys = [
+//        ForeignKey(
+//            entity = User::class,
+//            parentColumns = ["id"],
+//            childColumns = ["user_id"],
+//            onDelete = ForeignKey.CASCADE
+//        ),
+//        ForeignKey(
+//            entity = Item::class,
+//            parentColumns = ["receipt_id"],
+//            childColumns = ["id"],
+//            onDelete = ForeignKey.CASCADE
+//        )
+//    ]
 )
 data class UserItemCrossRef(
     @ColumnInfo(name = "user_id") val userId: Int,
     @ColumnInfo(name = "id") val itemId: Int
+)
+
+@Entity(
+    tableName = "user_receipt_cross_refs",
+    primaryKeys = ["user_id", "id"],
+    // TODO: Double check this -> Used for automatic clean up in case the item or user is deleted
+//    foreignKeys = [
+//        ForeignKey(
+//            entity = User::class,
+//            parentColumns = ["id"],
+//            childColumns = ["user_id"],
+//            onDelete = ForeignKey.CASCADE
+//        ),
+//        ForeignKey(
+//            entity = Receipt::class,
+//            parentColumns = ["id"],
+//            childColumns = ["receipt_id"],
+//            onDelete = ForeignKey.CASCADE
+//        )
+//    ]
+)
+data class UserReceiptCrossRef(
+    @ColumnInfo(name = "user_id") val userId: Int,
+    @ColumnInfo(name = "id") val receiptId: Int
 )
 
 // Relationship model for Room queries
@@ -49,12 +89,18 @@ data class ReceiptWithItems(
     val items: List<Item>
 )
 
+
 data class ItemWithUsers(
     @Embedded val item: Item,
     @Relation(
         parentColumn = "id",
+        entity = User::class,
         entityColumn = "id",
-        associateBy = Junction(UserItemCrossRef::class)
+        associateBy = Junction(
+            value = UserItemCrossRef::class,
+            parentColumn = "id",
+            entityColumn = "user_id"
+        )
     )
     val users: List<User>
 )
@@ -67,4 +113,19 @@ data class ReceiptWithItemsAndUsers(
         entityColumn = "receipt_id"
     )
     val itemsWithUsers: List<ItemWithUsers>
+)
+
+data class ReceiptWithUsers(
+    @Embedded val receipt: Receipt,
+    @Relation(
+        parentColumn = "id",
+        entity = User::class,
+        entityColumn = "id",
+        associateBy = Junction(
+            value = UserReceiptCrossRef::class,
+            parentColumn = "id",
+            entityColumn = "user_id"
+        )
+    )
+    val users: List<User>
 )

@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -53,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -62,7 +64,9 @@ import com.splitr.app.data.AppDatabase
 import com.splitr.app.data.Item
 import com.splitr.app.data.Receipt
 import com.splitr.app.data.ReceiptWithItems
+import com.splitr.app.data.ReceiptWithItemsAndUsers
 import com.splitr.app.data.User
+import com.splitr.app.ui.theme.DistributeReceiptViewModel
 import com.splitr.app.ui.theme.ItemizedReceiptViewModel
 import kotlinx.serialization.Serializable
 
@@ -79,7 +83,14 @@ sealed class Routes {
     )
 
     @Serializable
-    data object Collaborators
+    data class DistributeReceipt(
+        val receiptId: Int
+    )
+
+    @Serializable
+    data class Collaborators(
+        val receiptId: Int? = null
+    )
 }
 
 @Composable
@@ -101,7 +112,7 @@ fun SplitrApp() {
                     navController.navigate(Routes.ItemizedReceipt(receiptId))
                 },
                 onScanReceipt = { navController.navigate(Routes.Camera) },
-                onManageCollaborators = { navController.navigate(Routes.Collaborators) }
+                onManageCollaborators = { navController.navigate(Routes.Collaborators()) }
             )
         }
         composable<Routes.ItemizedReceipt> { backstackEntry ->
@@ -116,7 +127,28 @@ fun SplitrApp() {
                     receiptWithItems = it,
                     onDoneClick = {
                         navController.navigateUp()
+                    },
+                    onNext = { receiptId ->
+                        navController.navigate(Routes.DistributeReceipt(receiptId))
                     }
+                )
+            }
+        }
+        composable<Routes.DistributeReceipt> { backStackEntry ->
+            val details: Routes.DistributeReceipt = backStackEntry.toRoute()
+            val viewModel: DistributeReceiptViewModel = viewModel {
+                DistributeReceiptViewModel(receiptDao, details.receiptId)
+            }
+            val receiptWithItemsAndUsers by viewModel.receiptWithItemsAndUsers.collectAsState()
+
+            receiptWithItemsAndUsers?.let {
+                DistributeReceiptScreen(
+                    receiptWithItemsAndUsers = it,
+                    onDone = { // TODO: Aggregate total page
+                    },
+                    onAddContributors = {
+                        navController.navigate(Routes.Collaborators(details.receiptId))
+                    },
                 )
             }
         }
@@ -136,11 +168,17 @@ fun SplitrApp() {
                 }
             )
         }
-        composable<Routes.Collaborators> {
+
+        composable<Routes.Collaborators> { backStackEntry ->
+            val details: Routes.Collaborators = backStackEntry.toRoute()
             val viewModel: CollaboratorsViewModel = viewModel {
-                CollaboratorsViewModel(receiptDao)
+                CollaboratorsViewModel(receiptDao, details.receiptId)
             }
-            CollaboratorsScreen(viewModel)
+
+            CollaboratorsScreen(
+                onBack = { navController.navigateUp() },
+                viewModel
+            )
         }
     }
 }
@@ -192,7 +230,7 @@ fun CameraScreen(
 //    homeViewModel: HomeViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
     var hasCameraPermission by remember {
@@ -333,7 +371,7 @@ fun CameraScreen(
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+            verticalArrangement = Arrangement.Center
         ) {
             Text("Camera permission is required to scan receipts")
             Spacer(modifier = Modifier.height(16.dp))
@@ -350,6 +388,7 @@ fun CameraScreen(
 fun ItemizedReceiptScreen(
     receiptWithItems: ReceiptWithItems,
     onDoneClick: () -> Unit,
+    onNext: (Int) -> Unit,
     viewModel: ItemizedReceiptViewModel = viewModel()
 ) {
     var editableItems by remember { mutableStateOf(receiptWithItems.items) }
@@ -403,7 +442,9 @@ fun ItemizedReceiptScreen(
 
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { /* TODO: Implement collaborator edit action */ }
+            onClick = { /* TODO: Implement collaborator edit action */
+                onNext(receiptWithItems.receipt.id)
+            }
         ) {
             Text("Next")
         }
@@ -510,6 +551,7 @@ fun ItemRow(
 
 @Composable
 fun CollaboratorsScreen(
+    onBack: () -> Unit,
     viewModel: CollaboratorsViewModel = viewModel()
 ) {
     val collaborators by viewModel.collaborators.collectAsState()
@@ -579,13 +621,95 @@ fun CollaboratorsScreen(
 }
 
 @Composable
+fun DistributeReceiptScreen(
+    receiptWithItemsAndUsers: ReceiptWithItemsAndUsers,
+    onDone: () -> Unit,
+    onAddContributors: () -> Unit,
+    viewModel: DistributeReceiptViewModel = viewModel()
+) {
+    // State to hold the collaborators selected in this screen
+    var selectedCollaborators by remember { mutableStateOf<List<User>>(emptyList()) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            "Distribute Receipt",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Show basic receipt information
+        Text("Receipt: ${receiptWithItemsAndUsers.receipt.name}")
+        Text("Date: ${receiptWithItemsAndUsers.receipt.date}")
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Display the list of items for context
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            LazyColumn(modifier = Modifier.padding(16.dp)) {
+                items(receiptWithItemsAndUsers.itemsWithUsers) { itemWithUsers ->
+                    Text("${itemWithUsers.item.name} - ${itemWithUsers.users}")
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Section for collaborator selection.
+        // (You might later integrate a selection component here.)
+        Text(
+            "Selected Collaborators:",
+            fontWeight = FontWeight.Bold
+        )
+        if (selectedCollaborators.isNotEmpty()) {
+            Column(modifier = Modifier.padding(8.dp)) {
+                selectedCollaborators.forEach { collaborator ->
+                    Text(collaborator.name)
+                }
+            }
+        } else {
+            Text("No collaborators selected.", modifier = Modifier.padding(8.dp))
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Button to finalize distribution.
+        Button(
+            onClick = {
+                onAddContributors()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Add Contributors")
+        }
+
+        Button(
+            onClick = {
+                onDone()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Done")
+        }
+    }
+}
+
+
+@Composable
 fun AddCollaboratorDialog(
     newCollaboratorName: String,
     onNameChange: (String) -> Unit,
     onAddClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    androidx.compose.material3.AlertDialog(
+    AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Add Collaborator") },
         text = {
