@@ -397,9 +397,11 @@ fun ItemizedReceiptScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Receipt Details", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Text("Receipt Details", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Text("Name: ${receiptWithItems.receipt.name}")
         Text("Date: ${receiptWithItems.receipt.date}")
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -407,6 +409,7 @@ fun ItemizedReceiptScreen(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
+                .weight(1F)
                 .padding(8.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -439,41 +442,33 @@ fun ItemizedReceiptScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Column {
+                Spacer(modifier = Modifier.height(8.dp))
 
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = { /* TODO: Implement collaborator edit action */
-                onNext(receiptWithItems.receipt.id)
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    onClick = {
+                        viewModel.deleteReceipt(receiptWithItems.receipt)
+                        onDoneClick()
+                    }
+                ) {
+                    Text("Delete Receipt", color = Color.White)
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { /* TODO: Implement collaborator edit action */
+                        viewModel.updateItems(editableItems)
+                        onNext(receiptWithItems.receipt.id)
+                    }
+                ) {
+                    Text("Next")
+                }
             }
-        ) {
-            Text("Next")
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-            onClick = {
-                viewModel.deleteReceipt(receiptWithItems.receipt)
-                onDoneClick()
-            }
-        ) {
-            Text("Delete Receipt", color = Color.White)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Button to save changes
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                viewModel.updateItems(editableItems)
-                onDoneClick()
-            }
-        ) {
-            Text("Done")
         }
     }
 }

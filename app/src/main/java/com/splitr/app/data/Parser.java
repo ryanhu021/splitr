@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public class Parser {
 
     private static final Pattern PRICE_MATCHER = Pattern.compile("(?:^|[-–—])\\$?\\d{1,3}[.,]\\d{2}[-–—]?");
-    private static final Pattern DATE_MATCHER = Pattern.compile("\\b(?:\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}|\\d{1,2}[-/]\\d{1,2}[-/]\\d{2,4})\\b\n");
+    private static final Pattern DATE_MATCHER = Pattern.compile("\\b(?:\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}|\\d{1,2}[-/]\\d{1,2}[-/]\\d{2,4})\\b");
 
     public static ParserResult parseReceipt(Text text, int receiptId) {
         List<Item> items = new ArrayList<>();
