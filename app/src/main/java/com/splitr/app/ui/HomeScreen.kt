@@ -36,6 +36,10 @@ fun HomeScreen(
 ) {
     val receipts by viewModel.receiptList.collectAsState()
 
+    LaunchedEffect(Unit) {
+        viewModel.loadReceipts()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
