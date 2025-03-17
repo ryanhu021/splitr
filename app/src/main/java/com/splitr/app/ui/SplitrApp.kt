@@ -4,13 +4,13 @@ import android.util.Log
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,7 +67,7 @@ fun SplitrApp() {
 
     Scaffold(
         bottomBar = {
-            BottomNavigation(
+            NavigationBar(
                 modifier = Modifier
                     .height(70.dp)
                     .fillMaxWidth()
@@ -75,7 +75,7 @@ fun SplitrApp() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
-                BottomNavigationItem(
+                NavigationBarItem(
                     modifier = Modifier.padding(16.dp),
                     icon = { Icon(Icons.Rounded.Home, contentDescription = "Home") },
                     label = { Text("Home") },
@@ -88,7 +88,7 @@ fun SplitrApp() {
                     }
                 )
 
-                BottomNavigationItem(
+                NavigationBarItem(
                     modifier = Modifier.padding(16.dp),
                     icon = { Icon(Icons.Rounded.Add, contentDescription = "Camera") },
                     label = { Text("Camera") },
@@ -100,7 +100,7 @@ fun SplitrApp() {
                     }
                 )
 
-                BottomNavigationItem(
+                NavigationBarItem(
                     modifier = Modifier.padding(16.dp),
                     icon = { Icon(Icons.Filled.AccountCircle, contentDescription = "People") },
                     label = { Text("People") },
