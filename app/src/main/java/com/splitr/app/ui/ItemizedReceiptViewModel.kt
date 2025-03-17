@@ -39,6 +39,19 @@ class ItemizedReceiptViewModel(
         }
     }
 
+    fun addItem(item: Item, onItemAdded: (Long) -> Unit) {
+        viewModelScope.launch {
+            val id = receiptDao.insertItemAndUpdateTotal(item)
+            onItemAdded(id)
+        }
+    }
+
+    fun deleteItem(item: Item) {
+        viewModelScope.launch {
+            receiptDao.deleteItemAndUpdateTotal(item)
+        }
+    }
+
     fun updateReceiptName(name: String) {
         viewModelScope.launch {
             _receiptWithItems.value?.receipt?.let { receipt ->

@@ -14,6 +14,9 @@ interface ReceiptDao {
     suspend fun insertReceipt(receipt: Receipt): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertItem(item: Item): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertItems(items: List<Item>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -91,6 +94,15 @@ interface ReceiptDao {
     }
 
     @Transaction
+    suspend fun insertItemAndUpdateTotal(item: Item): Long {
+        val id = insertItem(item)
+        // After inserting an item, update the receipt total
+        val total = calculateTotalForReceipt(item.receiptId)
+        updateReceiptTotal(item.receiptId, total)
+        return id
+    }
+
+    @Transaction
     suspend fun insertItemsAndUpdateTotal(items: List<Item>) {
         insertItems(items)
         // After inserting items, update the receipt total
@@ -104,6 +116,14 @@ interface ReceiptDao {
     suspend fun updateItemAndUpdateTotal(item: Item)  {
         updateItem(item)
         // After updating an item, recalculate the total for the receipt
+        val total = calculateTotalForReceipt(item.receiptId)
+        updateReceiptTotal(item.receiptId, total)
+    }
+
+    @Transaction
+    suspend fun deleteItemAndUpdateTotal(item: Item) {
+        deleteItem(item)
+        // After deleting an item, recalculate the total for the receipt
         val total = calculateTotalForReceipt(item.receiptId)
         updateReceiptTotal(item.receiptId, total)
     }

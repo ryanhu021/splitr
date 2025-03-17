@@ -111,8 +111,8 @@ fun ItemizedReceiptScreen(
                                 viewModel.updateItems(editableItems)
                             },
                             onDelete = {
+                                viewModel.deleteItem(item)
                                 editableItems = editableItems.filter { it.id != item.id }
-                                viewModel.updateItems(editableItems)
                             }
                         )
                     }
@@ -126,8 +126,9 @@ fun ItemizedReceiptScreen(
                             price = 0.0,
                             quantity = 1
                         )
-                        editableItems = editableItems + newItem
-                        viewModel.updateItems(editableItems)
+                        viewModel.addItem(newItem, onItemAdded = { id ->
+                            editableItems = editableItems + newItem.copy(id = id.toInt())
+                        })
                     }
                 ) {
                     Text("Add Item")

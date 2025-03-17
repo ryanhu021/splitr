@@ -6,6 +6,7 @@ import androidx.room.Entity
 import androidx.room.Junction
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import androidx.room.ForeignKey
 
 
 @Entity(tableName = "receipts")
@@ -34,21 +35,20 @@ data class User(
 @Entity(
     tableName = "user_item_cross_refs",
     primaryKeys = ["user_id", "id"],
-    // TODO: Double check this -> Used for automatic clean up in case the item or user is deleted
-//    foreignKeys = [
-//        ForeignKey(
-//            entity = User::class,
-//            parentColumns = ["id"],
-//            childColumns = ["user_id"],
-//            onDelete = ForeignKey.CASCADE
-//        ),
-//        ForeignKey(
-//            entity = Item::class,
-//            parentColumns = ["receipt_id"],
-//            childColumns = ["id"],
-//            onDelete = ForeignKey.CASCADE
-//        )
-//    ]
+    foreignKeys = [
+        ForeignKey(
+            entity = User::class,
+            parentColumns = ["id"],
+            childColumns = ["user_id"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = Item::class,
+            parentColumns = ["id"],
+            childColumns = ["id"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
 )
 data class UserItemCrossRef(
     @ColumnInfo(name = "user_id") val userId: Int,
@@ -58,21 +58,20 @@ data class UserItemCrossRef(
 @Entity(
     tableName = "user_receipt_cross_refs",
     primaryKeys = ["user_id", "id"],
-    // TODO: Double check this -> Used for automatic clean up in case the item or user is deleted
-//    foreignKeys = [
-//        ForeignKey(
-//            entity = User::class,
-//            parentColumns = ["id"],
-//            childColumns = ["user_id"],
-//            onDelete = ForeignKey.CASCADE
-//        ),
-//        ForeignKey(
-//            entity = Receipt::class,
-//            parentColumns = ["id"],
-//            childColumns = ["receipt_id"],
-//            onDelete = ForeignKey.CASCADE
-//        )
-//    ]
+    foreignKeys = [
+        ForeignKey(
+            entity = User::class,
+            parentColumns = ["id"],
+            childColumns = ["user_id"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = Receipt::class,
+            parentColumns = ["id"],
+            childColumns = ["id"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
 )
 data class UserReceiptCrossRef(
     @ColumnInfo(name = "user_id") val userId: Int,
