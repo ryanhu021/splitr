@@ -1,6 +1,5 @@
 package com.splitr.app.ui
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.splitr.app.data.Item
@@ -22,7 +21,7 @@ class HomeViewModel(
         addTestReceipts()
     }
 
-    private fun loadReceipts() {
+    fun loadReceipts() {
         viewModelScope.launch {
             _receiptList.value = receiptDao.getAllReceipts()
         }
