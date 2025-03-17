@@ -1,7 +1,7 @@
 package com.splitr.app.data
 
 class ItemWithoutIds(
-    val name: String,
+    var name: String,
     var price: Double,
     val quantity: Int,
 )
