@@ -24,7 +24,7 @@ class ItemizedReceiptViewModel(
         }
     }
 
-    private fun loadReceipt(receiptId: Int) {
+    fun loadReceipt(receiptId: Int) {
         viewModelScope.launch {
             val receipt = receiptDao.getReceiptWithItemsById(receiptId)
             _receiptWithItems.value = receipt
@@ -34,7 +34,7 @@ class ItemizedReceiptViewModel(
     fun updateItems(items: List<Item>) {
         viewModelScope.launch {
             items.forEach { item ->
-                receiptDao.updateItem(item)
+                receiptDao.updateItemAndUpdateTotal(item)
             }
         }
     }

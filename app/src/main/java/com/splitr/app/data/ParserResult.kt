@@ -9,6 +9,5 @@ class ItemWithoutIds(
 class ParserResult(
     val name: String,
     val date: String,
-    val totalAmount: Double,
     val items: List<ItemWithoutIds>
 )

@@ -90,7 +90,7 @@ public class Parser {
         }
 
         // create new ParserResult
-        return new ParserResult(title, date, Double.parseDouble(lastPrice), items);
+        return new ParserResult(title, date, items);
     }
 
     private static String extractPrice(Text.Line priceLine) {

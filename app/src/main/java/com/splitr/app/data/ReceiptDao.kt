@@ -35,6 +35,10 @@ interface ReceiptDao {
 
     @Transaction
     @Query("SELECT * FROM receipts WHERE id = :receiptId")
+    suspend fun getReceiptById(receiptId: Int): Receipt
+
+    @Transaction
+    @Query("SELECT * FROM receipts WHERE id = :receiptId")
     suspend fun getReceiptWithItemsById(receiptId: Int): ReceiptWithItems
 
     @Transaction
@@ -72,4 +76,35 @@ interface ReceiptDao {
 
     @Update
     suspend fun updateUser(user: User)
+
+    // Total calculation
+
+    @Transaction
+    @Query("SELECT SUM(price * quantity) FROM items WHERE receipt_id = :receiptId")
+    suspend fun calculateTotalForReceipt(receiptId: Int): Double
+
+    @Transaction
+    suspend fun updateReceiptTotal(receiptId: Int, total: Double) {
+        // Update the total amount of the receipt
+        val receipt = getReceiptById(receiptId).copy(totalAmount = total)
+        updateReceipt(receipt)
+    }
+
+    @Transaction
+    suspend fun insertItemsAndUpdateTotal(items: List<Item>) {
+        insertItems(items)
+        // After inserting items, update the receipt total
+        items.forEach { item ->
+            val total = calculateTotalForReceipt(item.receiptId)
+            updateReceiptTotal(item.receiptId, total)
+        }
+    }
+
+    @Transaction
+    suspend fun updateItemAndUpdateTotal(item: Item)  {
+        updateItem(item)
+        // After updating an item, recalculate the total for the receipt
+        val total = calculateTotalForReceipt(item.receiptId)
+        updateReceiptTotal(item.receiptId, total)
+    }
 }

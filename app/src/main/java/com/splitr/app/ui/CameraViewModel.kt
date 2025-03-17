@@ -18,7 +18,6 @@ import com.splitr.app.data.ReceiptDao
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.util.regex.Pattern
 
 class CameraViewModel(
     private val receiptDao: ReceiptDao,
@@ -55,7 +54,7 @@ class CameraViewModel(
                 val parsedText = ""
 
                 // parse receipt details and items
-                var parserResult = ParserResult("", "", 0.0, emptyList())
+                var parserResult = ParserResult("", "", emptyList())
                 try {
                     parserResult = Parser.parseReceipt(visionText, -1)
                 } catch (e: Exception) {
@@ -66,7 +65,6 @@ class CameraViewModel(
                 val receipt = Receipt(
                     name = parserResult.name,
                     date = parserResult.date,
-                    totalAmount = parserResult.totalAmount
                 )
                 // Launch coroutine to insert receipt and items
                 viewModelScope.launch {
@@ -85,7 +83,7 @@ class CameraViewModel(
                         }
 
                         // insert items into the database
-                        receiptDao.insertItems(itemsWithReceiptId)
+                        receiptDao.insertItemsAndUpdateTotal(itemsWithReceiptId)
 
                         _parsedReceipt.value = receipt.copy(id = receiptId)
                         _parsedItems.value = itemsWithReceiptId
@@ -105,49 +103,6 @@ class CameraViewModel(
             .addOnCompleteListener {
                 imageProxy.close()
             }
-    }
-
-    /**
-     * Parses recognized text into Receipt and Item objects
-     */
-    private fun parseReceiptData(text: String) {
-        val lines = text.lines().map { it.trim() }
-
-        // Extract name
-        val storeName = lines.firstOrNull { it.isNotBlank() } ?: "Unknown Store"
-
-        // Extract date
-        val datePattern = Pattern.compile("\\d{2}/\\d{2}/\\d{4}|\\d{4}-\\d{2}-\\d{2}")
-        val date = lines.firstOrNull { datePattern.matcher(it).find() } ?: "Unknown Date"
-
-        // Extract total amount
-        val totalAmountPattern = Pattern.compile("(?i)(total|amount)\\s*[:$]*\\s*([\\d.]+)")
-        val totalAmount = lines
-            .firstOrNull { totalAmountPattern.matcher(it).find() }
-            ?.let {
-                totalAmountPattern.matcher(it).apply { find() }.group(2)?.toDoubleOrNull() ?: 0.0
-            } ?: 0.0
-
-        // Extract items
-        val itemPattern = Pattern.compile("(.+?)\\s+(\\d+(\\.\\d{2})?)\\s*x\\s*(\\d+)")
-        val items = lines.mapNotNull { line ->
-            itemPattern.matcher(line).takeIf { it.find() }?.let {
-                Item(
-                    name = it.group(1).trim(),
-                    price = it.group(2).toDouble(),
-                    quantity = it.group(4).toInt(),
-                    receiptId = 0 // Will be assigned when saved
-                )
-            }
-        }
-
-        _parsedReceipt.value = Receipt(
-            name = storeName,
-            date = date,
-            totalAmount = totalAmount
-        )
-
-        _parsedItems.value = items
     }
 
     fun clearResult() {

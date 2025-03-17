@@ -51,8 +51,9 @@ fun ReceiptBreakdownScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Show basic receipt information
-        Text("Receipt: ${receiptWithItemsAndUsers.receipt.name}")
+        Text("Name: ${receiptWithItemsAndUsers.receipt.name}")
         Text("Date: ${receiptWithItemsAndUsers.receipt.date}")
+        Text("Total Amount: $${"%.2f".format(receiptWithItemsAndUsers.receipt.totalAmount)}")
         Spacer(modifier = Modifier.height(8.dp))
 
         // Display the list of collaborators and their amounts

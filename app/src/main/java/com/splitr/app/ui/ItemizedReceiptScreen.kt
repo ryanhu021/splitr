@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +51,10 @@ fun ItemizedReceiptScreen(
     var editableItems by remember { mutableStateOf(receiptWithItems.items) }
     var updatedName by remember { mutableStateOf(receiptWithItems.receipt.name) }
     var updatedDate by remember { mutableStateOf(receiptWithItems.receipt.date) }
+
+    LaunchedEffect(editableItems, updatedName, updatedDate) {
+        viewModel.loadReceipt(receiptWithItems.receipt.id)
+    }
 
     Column(
         modifier = Modifier

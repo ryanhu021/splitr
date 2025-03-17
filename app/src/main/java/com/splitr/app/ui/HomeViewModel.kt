@@ -31,7 +31,7 @@ class HomeViewModel(
         viewModelScope.launch {
             val receiptId = receiptDao.insertReceipt(receipt).toInt()
             items.forEach { it.copy(receiptId = receiptId) }
-            receiptDao.insertItems(items)
+            receiptDao.insertItemsAndUpdateTotal(items)
             loadReceipts()
         }
     }
@@ -56,7 +56,7 @@ class HomeViewModel(
                     Item(receiptId = receiptId, name = "Pizza", price = 12.99, quantity = 1),
                     Item(receiptId = receiptId, name = "Soda", price = 2.50, quantity = 2),
                 )
-                receiptDao.insertItems(items)
+                receiptDao.insertItemsAndUpdateTotal(items)
 
                 loadReceipts() // Refresh UI
             }

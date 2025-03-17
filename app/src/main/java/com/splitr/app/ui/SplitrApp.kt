@@ -130,8 +130,6 @@ fun SplitrApp() {
                     onViewBreakdown = { receiptId ->
                         navController.navigate(Routes.ReceiptBreakdown(receiptId))
                     },
-                    onScanReceipt = { navController.navigate(Routes.Camera) },
-                    onManageCollaborators = { navController.navigate(Routes.Collaborators()) },
                     viewModel
                 )
             }

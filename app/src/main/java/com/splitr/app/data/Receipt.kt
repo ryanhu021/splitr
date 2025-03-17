@@ -13,7 +13,7 @@ data class Receipt(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "date") val date: String,
-    @ColumnInfo(name = "total_amount") val totalAmount: Double
+    @ColumnInfo(name = "total_amount") val totalAmount: Double = 0.0
 )
 
 @Entity(tableName = "items")

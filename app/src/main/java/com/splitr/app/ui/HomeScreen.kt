@@ -32,15 +32,9 @@ import com.splitr.app.data.Receipt
 fun HomeScreen(
     onEditReceipt: (Int) -> Unit,
     onViewBreakdown: (Int) -> Unit,
-    onScanReceipt: () -> Unit,
-    onManageCollaborators: () -> Unit,
     viewModel: HomeViewModel = viewModel(),
 ) {
     val receipts by viewModel.receiptList.collectAsState()
-
-    LaunchedEffect(Unit) {
-        viewModel.loadReceipts()
-    }
 
     Column(
         modifier = Modifier
@@ -49,20 +43,6 @@ fun HomeScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("Splitr", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = onScanReceipt
-        ) {
-            Text("Scan New Receipt")
-        }
-
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = onManageCollaborators
-        ) {
-            Text("Manage Collaborators")
-        }
 
         LazyColumn {
             items(receipts) { receiptWithItems ->
