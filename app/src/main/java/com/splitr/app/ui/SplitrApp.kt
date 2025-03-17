@@ -1,14 +1,29 @@
 package com.splitr.app.ui
 
 import android.util.Log
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.splitr.app.data.AppDatabase
@@ -50,10 +65,59 @@ fun SplitrApp() {
     val database = remember { AppDatabase.getDatabase(context) }
     val receiptDao = remember { database.receiptDao() }
 
+    Scaffold(
+        bottomBar = {
+            BottomNavigation(
+                modifier = Modifier
+                    .height(70.dp)
+                    .fillMaxWidth()
+            ) {
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
 
+                BottomNavigationItem(
+                    modifier = Modifier.padding(16.dp),
+                    icon = { Icon(Icons.Rounded.Home, contentDescription = "Home") },
+                    label = { Text("Home") },
+                    selected = currentRoute == Routes.Home.toString(),
+                    onClick = {
+                        navController.navigate(Routes.Home) {
+                            popUpTo(navController.graph.startDestinationId)
+                            launchSingleTop = true
+                        }
+                    }
+                )
+
+                BottomNavigationItem(
+                    modifier = Modifier.padding(16.dp),
+                    icon = { Icon(Icons.Rounded.Add, contentDescription = "Camera") },
+                    label = { Text("Camera") },
+                    selected = currentRoute == Routes.Camera.toString(),
+                    onClick = {
+                        navController.navigate(Routes.Camera) {
+                            launchSingleTop = true
+                        }
+                    }
+                )
+
+                BottomNavigationItem(
+                    modifier = Modifier.padding(16.dp),
+                    icon = { Icon(Icons.Filled.AccountCircle, contentDescription = "People") },
+                    label = { Text("People") },
+                    selected = currentRoute == Routes.Collaborators().toString(),
+                    onClick = {
+                        navController.navigate(Routes.Collaborators()) {
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
+        }
+    ) { innerPadding ->
     NavHost(
         navController = navController,
-        startDestination = Routes.Home
+        startDestination = Routes.Home,
+        modifier = Modifier.padding(innerPadding)
     ) {
         composable<Routes.Home> {
             val viewModel: HomeViewModel = viewModel {
@@ -155,5 +219,5 @@ fun SplitrApp() {
                 viewModel
             )
         }
-    }
+    }}
 }
