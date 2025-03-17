@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -90,8 +91,8 @@ fun SplitrApp() {
 
                 NavigationBarItem(
                     modifier = Modifier.padding(16.dp),
-                    icon = { Icon(Icons.Rounded.Add, contentDescription = "Camera") },
-                    label = { Text("Camera") },
+                    icon = { Icon(Icons.Rounded.Search, contentDescription = "Scan") },
+                    label = { Text("Scan") },
                     selected = currentRoute == Routes.Camera.toString(),
                     onClick = {
                         navController.navigate(Routes.Camera) {
