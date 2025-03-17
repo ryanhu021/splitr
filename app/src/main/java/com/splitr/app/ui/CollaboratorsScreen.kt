@@ -143,7 +143,7 @@ fun AddCollaboratorDialog(
         onDismissRequest = onDismiss,
         title = { Text("Add Collaborator") },
         text = {
-            TextField(
+            AutoClosingTextField(
                 value = newCollaboratorName,
                 onValueChange = onNameChange,
                 label = { Text("Collaborator Name") }

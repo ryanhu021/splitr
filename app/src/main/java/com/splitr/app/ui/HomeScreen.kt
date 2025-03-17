@@ -85,7 +85,7 @@ fun ReceiptItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(receipt.name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Text(receipt.date)
-                Text("Total: ${'$'}${receipt.totalAmount}")
+                Text("Total: ${'$'}${"%.2f".format(receipt.totalAmount)}")
             }
             IconButton(onClick = { onEditReceipt(receipt.id) }) {
                 Icon(Icons.Filled.Edit, contentDescription = "Edit Receipt", tint = Color.Gray)
