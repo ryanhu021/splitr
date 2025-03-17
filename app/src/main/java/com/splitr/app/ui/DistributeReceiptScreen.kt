@@ -224,7 +224,11 @@ fun ReceiptItemWithContributors(
         ) {
             // Item name on the left
             Text(
-                text = itemWithUsers.item.name,
+                text = if (itemWithUsers.item.name.length > 20) {
+                    itemWithUsers.item.name.take(20) + "..."
+                } else {
+                    itemWithUsers.item.name
+                },
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
             )
