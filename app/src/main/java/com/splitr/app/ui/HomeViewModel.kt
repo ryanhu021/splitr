@@ -18,7 +18,7 @@ class HomeViewModel(
 
     init {
         loadReceipts()
-        addTestReceipts()
+        // addTestReceipts()
     }
 
     fun loadReceipts() {

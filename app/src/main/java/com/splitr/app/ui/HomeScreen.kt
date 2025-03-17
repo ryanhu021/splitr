@@ -48,13 +48,18 @@ fun HomeScreen(
     ) {
         Text("Splitr", fontSize = 24.sp, fontWeight = FontWeight.Bold)
 
-        LazyColumn {
-            items(receipts) { receiptWithItems ->
-                ReceiptItem(
-                    receiptWithItems.receipt,
-                    onEditReceipt,
-                    onViewBreakdown)
+        if (receipts.isNotEmpty()) {
+            LazyColumn {
+                items(receipts) { receiptWithItems ->
+                    ReceiptItem(
+                        receiptWithItems.receipt,
+                        onEditReceipt,
+                        onViewBreakdown)
+                }
             }
+        } else {
+            Text("No receipts found.", modifier = Modifier.padding(8.dp))
+            Text("Scan your first receipt to get started!", modifier = Modifier.padding(8.dp))
         }
     }
 }
