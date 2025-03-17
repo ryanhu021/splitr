@@ -81,7 +81,10 @@ public class Parser {
             if (priceValue < 0.0 && !items.isEmpty()) {
                 // apply discount to previous item if price is negative and round to 2 decimal places
                 double discountedValue = Math.round((items.get(items.size() - 1).getPrice() + priceValue) * 100.0) / 100.0;
-                items.get(items.size() - 1).setPrice(discountedValue);
+                String discountText = String.format("($%.2f DISCOUNT APPLIED)", -discountedValue);
+                ItemWithoutIds discountedItem = items.get(items.size() - 1);
+                discountedItem.setPrice(discountedValue);
+                discountedItem.setName(discountedItem.getName() + discountText);
             } else {
                 // otherwise add as new item
                 // item ids start at 1
