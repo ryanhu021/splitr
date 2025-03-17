@@ -36,10 +36,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.splitr.app.data.ItemWithUsers
 import com.splitr.app.data.ReceiptWithItemsAndUsers
 import com.splitr.app.data.User
@@ -177,6 +179,9 @@ fun DistributeReceiptScreen(
 
 @Composable
 fun ItemCollaboratorIcon(user: User, onClick: () -> Unit) {
+    val isLebron = user.name.equals("Lebron", ignoreCase = true)
+    val imageUrl = "https://cdn.nba.com/headshots/nba/latest/1040x760/2544.png"
+
     Card(
         modifier = Modifier
             .size(36.dp)
@@ -186,15 +191,24 @@ fun ItemCollaboratorIcon(user: User, onClick: () -> Unit) {
         shape = CircleShape,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = user.name.firstOrNull()?.toString() ?: "",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium
+        if (isLebron) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "Lebron's profile picture",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             )
+        } else {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = user.name.firstOrNull()?.toString() ?: "",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
     }
 }
