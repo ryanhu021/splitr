@@ -114,110 +114,111 @@ fun SplitrApp() {
             }
         }
     ) { innerPadding ->
-    NavHost(
-        navController = navController,
-        startDestination = Routes.Home,
-        modifier = Modifier.padding(innerPadding)
-    ) {
-        composable<Routes.Home> {
-            val viewModel: HomeViewModel = viewModel {
-                HomeViewModel(receiptDao)
-            }
-            HomeScreen(
-                onEditReceipt = { receiptId ->
-                    navController.navigate(Routes.ItemizedReceipt(receiptId))
-                },
-                onViewBreakdown = { receiptId ->
-                    navController.navigate(Routes.ReceiptBreakdown(receiptId))
-                },
-                onScanReceipt = { navController.navigate(Routes.Camera) },
-                onManageCollaborators = { navController.navigate(Routes.Collaborators()) },
-                viewModel
-            )
-        }
-        composable<Routes.ItemizedReceipt> { backstackEntry ->
-            val details: Routes.ItemizedReceipt = backstackEntry.toRoute()
-            val viewModel: ItemizedReceiptViewModel = viewModel {
-                ItemizedReceiptViewModel(receiptDao, details.receiptId)
-            }
-            val receiptWithItems by viewModel.receiptWithItems.collectAsState()
-
-            receiptWithItems?.let {
-                ItemizedReceiptScreen(
-                    receiptWithItems = it,
-                    onDoneClick = {
-                        navController.navigateUp()
+        NavHost(
+            navController = navController,
+            startDestination = Routes.Home,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable<Routes.Home> {
+                val viewModel: HomeViewModel = viewModel {
+                    HomeViewModel(receiptDao)
+                }
+                HomeScreen(
+                    onEditReceipt = { receiptId ->
+                        navController.navigate(Routes.ItemizedReceipt(receiptId))
                     },
-                    onNext = { receiptId ->
-                        navController.navigate(Routes.DistributeReceipt(receiptId))
+                    onViewBreakdown = { receiptId ->
+                        navController.navigate(Routes.ReceiptBreakdown(receiptId))
+                    },
+                    onScanReceipt = { navController.navigate(Routes.Camera) },
+                    onManageCollaborators = { navController.navigate(Routes.Collaborators()) },
+                    viewModel
+                )
+            }
+            composable<Routes.ItemizedReceipt> { backstackEntry ->
+                val details: Routes.ItemizedReceipt = backstackEntry.toRoute()
+                val viewModel: ItemizedReceiptViewModel = viewModel {
+                    ItemizedReceiptViewModel(receiptDao, details.receiptId)
+                }
+                val receiptWithItems by viewModel.receiptWithItems.collectAsState()
+
+                receiptWithItems?.let {
+                    ItemizedReceiptScreen(
+                        receiptWithItems = it,
+                        onDoneClick = {
+                            navController.navigateUp()
+                        },
+                        onNext = { receiptId ->
+                            navController.navigate(Routes.DistributeReceipt(receiptId))
+                        }
+                    )
+                }
+            }
+            composable<Routes.DistributeReceipt> { backStackEntry ->
+                val details: Routes.DistributeReceipt = backStackEntry.toRoute()
+                val viewModel: DistributeReceiptViewModel = viewModel {
+                    DistributeReceiptViewModel(receiptDao, details.receiptId)
+                }
+                val receiptWithItemsAndUsers by viewModel.receiptWithItemsAndUsers.collectAsState()
+
+                receiptWithItemsAndUsers?.let {
+                    DistributeReceiptScreen(
+                        receiptWithItemsAndUsers = it,
+                        onDone = { // TODO: Aggregate total page
+                            navController.navigate(Routes.Home)
+                        },
+                        onViewBreakdown = {
+                            navController.navigate(Routes.ReceiptBreakdown(details.receiptId))
+                        },
+                        onAddContributors = {
+                            navController.navigate(Routes.Collaborators(details.receiptId))
+                        },
+                    )
+                }
+            }
+            composable<Routes.ReceiptBreakdown> { backStackEntry ->
+                val details: Routes.ReceiptBreakdown = backStackEntry.toRoute()
+                val viewModel: ReceiptBreakdownViewModel = viewModel {
+                    ReceiptBreakdownViewModel(receiptDao, details.receiptId)
+                }
+                val receiptWithItemsAndUsers by viewModel.receiptWithItemsAndUsers.collectAsState()
+
+                receiptWithItemsAndUsers?.let {
+                    ReceiptBreakdownScreen(
+                        receiptWithItemsAndUsers = it,
+                        onDone = { navController.navigate(Routes.Home) },
+                    )
+                }
+            }
+            composable<Routes.Camera> {
+                val viewModel: CameraViewModel = viewModel {
+                    CameraViewModel(receiptDao)
+                }
+
+                CameraScreen(
+                    viewModel = viewModel,
+                    onTextRecognized = { recognizedText ->
+                        Log.e("CameraScreen", recognizedText)
+                        println(recognizedText)
+                    },
+                    onReceiptProcessed = { receiptId ->
+                        navController.navigate(Routes.ItemizedReceipt(receiptId))
                     }
                 )
             }
-        }
-        composable<Routes.DistributeReceipt> { backStackEntry ->
-            val details: Routes.DistributeReceipt = backStackEntry.toRoute()
-            val viewModel: DistributeReceiptViewModel = viewModel {
-                DistributeReceiptViewModel(receiptDao, details.receiptId)
-            }
-            val receiptWithItemsAndUsers by viewModel.receiptWithItemsAndUsers.collectAsState()
 
-            receiptWithItemsAndUsers?.let {
-                DistributeReceiptScreen(
-                    receiptWithItemsAndUsers = it,
-                    onDone = { // TODO: Aggregate total page
-                        navController.navigate(Routes.Home)
-                    },
-                    onViewBreakdown = {
-                        navController.navigate(Routes.ReceiptBreakdown(details.receiptId))
-                    },
-                    onAddContributors = {
-                        navController.navigate(Routes.Collaborators(details.receiptId))
-                    },
-                )
-            }
-        }
-        composable<Routes.ReceiptBreakdown> { backStackEntry ->
-            val details: Routes.ReceiptBreakdown = backStackEntry.toRoute()
-            val viewModel: ReceiptBreakdownViewModel = viewModel {
-                ReceiptBreakdownViewModel(receiptDao, details.receiptId)
-            }
-            val receiptWithItemsAndUsers by viewModel.receiptWithItemsAndUsers.collectAsState()
-
-            receiptWithItemsAndUsers?.let{
-                ReceiptBreakdownScreen(
-                    receiptWithItemsAndUsers = it,
-                    onDone = { navController.navigate(Routes.Home) },
-                )
-            }
-        }
-        composable<Routes.Camera> {
-            val viewModel: CameraViewModel = viewModel {
-                CameraViewModel(receiptDao)
-            }
-
-            CameraScreen(
-                viewModel = viewModel,
-                onTextRecognized = { recognizedText ->
-                    Log.e("CameraScreen", recognizedText)
-                    println(recognizedText)
-                },
-                onReceiptProcessed = { receiptId ->
-                    navController.navigate(Routes.ItemizedReceipt(receiptId))
+            composable<Routes.Collaborators> { backStackEntry ->
+                val details: Routes.Collaborators = backStackEntry.toRoute()
+                val viewModel: CollaboratorsViewModel = viewModel {
+                    CollaboratorsViewModel(receiptDao, details.receiptId)
                 }
-            )
-        }
 
-        composable<Routes.Collaborators> { backStackEntry ->
-            val details: Routes.Collaborators = backStackEntry.toRoute()
-            val viewModel: CollaboratorsViewModel = viewModel {
-                CollaboratorsViewModel(receiptDao, details.receiptId)
+                CollaboratorsScreen(
+                    details.receiptId,
+                    onBack = { navController.navigateUp() },
+                    viewModel
+                )
             }
-
-            CollaboratorsScreen(
-                details.receiptId,
-                onBack = { navController.navigateUp() },
-                viewModel
-            )
         }
-    }}
+    }
 }
