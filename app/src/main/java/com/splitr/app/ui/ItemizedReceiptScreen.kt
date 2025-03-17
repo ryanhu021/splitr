@@ -57,7 +57,7 @@ fun ItemizedReceiptScreen(
     ) {
         Text("Receipt Details", fontSize = 24.sp, fontWeight = FontWeight.Bold)
 
-        TextField(
+        AutoClosingTextField(
             value = updatedName,
             onValueChange = { newName ->
                 viewModel.updateReceiptName(newName)
@@ -72,7 +72,7 @@ fun ItemizedReceiptScreen(
 
         Spacer(modifier = Modifier.width(16.dp))
 
-        TextField(
+        AutoClosingTextField(
             value = updatedDate,
             onValueChange = { newDate ->
                 viewModel.updateReceiptDate(newDate)
@@ -187,7 +187,7 @@ fun ItemRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(2f)) {
-            TextField(
+            AutoClosingTextField(
                 value = item.name,
                 onValueChange = { onItemChange(item.copy(name = it)) },
                 modifier = Modifier.fillMaxWidth(),
@@ -196,8 +196,8 @@ fun ItemRow(
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
-        TextField(
-            value = "${'$'}${"%.2f".format(item.price)}",
+        AutoClosingTextField(
+            value = "${'$'}${item.price}",
             onValueChange = {
                 val priceString = it.removePrefix("$")
                 priceString.toDoubleOrNull()?.let { price ->
