@@ -12,6 +12,7 @@ import androidx.compose.ui.text.TextStyle
 @Composable
 fun AutoClosingTextField(
     modifier: Modifier = Modifier,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
     value: String,
     onValueChange: (String) -> Unit,
     label: @Composable (() -> Unit)? = null,
@@ -21,7 +22,7 @@ fun AutoClosingTextField(
 
     TextField(
         modifier = modifier,
-        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+        keyboardOptions = keyboardOptions,
         keyboardActions = KeyboardActions(
             onDone = { keyboardController?.hide() }
         ),
