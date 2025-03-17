@@ -1,5 +1,6 @@
 package com.splitr.app.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +31,7 @@ import com.splitr.app.data.Receipt
 @Composable
 fun HomeScreen(
     onEditReceipt: (Int) -> Unit,
+    onViewBreakdown: (Int) -> Unit,
     onScanReceipt: () -> Unit,
     onManageCollaborators: () -> Unit,
     viewModel: HomeViewModel = viewModel(),
@@ -64,7 +66,10 @@ fun HomeScreen(
 
         LazyColumn {
             items(receipts) { receiptWithItems ->
-                ReceiptItem(receiptWithItems.receipt, onEditReceipt)
+                ReceiptItem(
+                    receiptWithItems.receipt,
+                    onEditReceipt,
+                    onViewBreakdown)
             }
         }
     }
@@ -73,12 +78,14 @@ fun HomeScreen(
 @Composable
 fun ReceiptItem(
     receipt: Receipt,
-    onEditReceipt: (Int) -> Unit
+    onEditReceipt: (Int) -> Unit,
+    onClick: (Int) -> Unit,
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
+            .clickable { onClick(receipt.id) },
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
