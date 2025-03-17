@@ -57,8 +57,9 @@ fun CollaboratorsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                Text("Back", fontSize = 24.sp)
+                Text("Back")
             }
+            Spacer(modifier = Modifier.height(16.dp))
             if (selectedCollaborators.isNotEmpty()) {
                 Text("Selected Collaborators", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
