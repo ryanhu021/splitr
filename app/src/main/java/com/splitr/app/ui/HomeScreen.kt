@@ -38,7 +38,7 @@ fun HomeScreen(
 ) {
     val receipts by viewModel.receiptList.collectAsState()
 
-    LaunchedEffect(true) {
+    LaunchedEffect(Unit) {
         viewModel.loadReceipts()
     }
 
