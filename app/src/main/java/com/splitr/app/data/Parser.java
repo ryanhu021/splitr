@@ -3,7 +3,9 @@ package com.splitr.app.data;
 import com.google.mlkit.vision.text.Text;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,6 +14,8 @@ public class Parser {
 
     private static final Pattern PRICE_MATCHER = Pattern.compile("(?:^|[-–—])\\$?\\d{1,3}[.,]\\d{2}[-–—]?");
     private static final Pattern DATE_MATCHER = Pattern.compile("\\b(?:\\d{4}[-–—./]\\d{1,2}[-–—./]\\d{1,2}|\\d{1,2}[-–—./]\\d{1,2}[-–—./]\\d{2,4})\\b");
+
+    private static final HashSet<String> FILTER_KEYWORDS = new HashSet<>(Arrays.asList("SUBTOTAL", "TAX", "TOTAL", "VISA", "CHANGE"));
 
     public static ParserResult parseReceipt(Text text, int receiptId) {
         List<ItemWithoutIds> items = new ArrayList<>();
@@ -85,7 +89,7 @@ public class Parser {
                 ItemWithoutIds discountedItem = items.get(items.size() - 1);
                 discountedItem.setPrice(discountedValue);
                 discountedItem.setName(discountedItem.getName() + discountText);
-            } else {
+            } else if (!FILTER_KEYWORDS.contains(closestLine.getText().trim().toUpperCase())) {
                 // otherwise add as new item
                 // item ids start at 1
                 items.add(new ItemWithoutIds(closestLine.getText().trim(), Double.parseDouble(extractPrice(price)), 1));
