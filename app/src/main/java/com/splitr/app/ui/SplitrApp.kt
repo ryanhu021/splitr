@@ -47,6 +47,11 @@ sealed class Routes {
     )
 
     @Serializable
+    data class ReceiptBreakdown(
+        val receiptId: Int
+    )
+
+    @Serializable
     data class Collaborators(
         val receiptId: Int? = null
     )
@@ -113,7 +118,6 @@ fun SplitrApp() {
             navController = navController,
             startDestination = Routes.Home,
             modifier = Modifier.padding(innerPadding)
-
         ) {
             composable<Routes.Home> {
                 val viewModel: HomeViewModel = viewModel {
@@ -122,6 +126,9 @@ fun SplitrApp() {
                 HomeScreen(
                     onEditReceipt = { receiptId ->
                         navController.navigate(Routes.ItemizedReceipt(receiptId))
+                    },
+                    onViewBreakdown = { receiptId ->
+                        navController.navigate(Routes.ReceiptBreakdown(receiptId))
                     },
                     onScanReceipt = { navController.navigate(Routes.Camera) },
                     onManageCollaborators = { navController.navigate(Routes.Collaborators()) },
@@ -161,11 +168,25 @@ fun SplitrApp() {
                             navController.navigate(Routes.Home)
                         },
                         onViewBreakdown = {
-                            // TODO: Navigate to breakdown screen
+                            navController.navigate(Routes.ReceiptBreakdown(details.receiptId))
                         },
                         onAddContributors = {
                             navController.navigate(Routes.Collaborators(details.receiptId))
                         },
+                    )
+                }
+            }
+            composable<Routes.ReceiptBreakdown> { backStackEntry ->
+                val details: Routes.ReceiptBreakdown = backStackEntry.toRoute()
+                val viewModel: ReceiptBreakdownViewModel = viewModel {
+                    ReceiptBreakdownViewModel(receiptDao, details.receiptId)
+                }
+                val receiptWithItemsAndUsers by viewModel.receiptWithItemsAndUsers.collectAsState()
+
+                receiptWithItemsAndUsers?.let {
+                    ReceiptBreakdownScreen(
+                        receiptWithItemsAndUsers = it,
+                        onDone = { navController.navigate(Routes.Home) },
                     )
                 }
             }
