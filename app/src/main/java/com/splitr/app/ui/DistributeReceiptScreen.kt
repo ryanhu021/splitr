@@ -1,5 +1,6 @@
 package com.splitr.app.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -91,7 +92,8 @@ fun DistributeReceiptScreen(
                         onItemClick = { selectedItemId = itemWithUsers.item.id },
                         onContributorClick = { user ->
                             viewModel.removeCollaboratorsOnItem(itemWithUsers.item.id, user.id)
-                        }
+                        },
+                        isSelected = selectedItemId == itemWithUsers.item.id // Pass the selected state
                     )
                 }
             }
@@ -127,29 +129,17 @@ fun DistributeReceiptScreen(
                     .padding(8.dp)
                     .weight(1F)
             ) {
-//                receiptContributors.value.forEach { collaborator ->
-//                    CollaboratorItem(
-//                        collaborator,
-//                        onClick = ({
-//                            viewModel.assignCollaboratorsOnItem(
-//                                selectedItemId,
-//                                collaborator.id
-//                            )
-//                        }),
-//                        onDelete = ({ viewModel.deleteCollaborator(collaborator) })
-//                    )
-//                }
                 LazyColumn {
                     items(receiptContributors.value) { collaborator ->
                         CollaboratorItem(
                             collaborator,
-                            onClick = ({
+                            onClick = {
                                 viewModel.assignCollaboratorsOnItem(
                                     selectedItemId,
                                     collaborator.id
                                 )
-                            }),
-                            onDelete = ({ viewModel.deleteCollaborator(collaborator) })
+                            },
+                            onDelete = { viewModel.deleteCollaborator(collaborator) }
                         )
                     }
                 }
@@ -183,6 +173,7 @@ fun DistributeReceiptScreen(
     }
 }
 
+
 @Composable
 fun ItemCollaboratorIcon(user: User, onClick: () -> Unit) {
     Card(
@@ -211,18 +202,23 @@ fun ItemCollaboratorIcon(user: User, onClick: () -> Unit) {
 fun ReceiptItemWithContributors(
     itemWithUsers: ItemWithUsers,
     onItemClick: () -> Unit,
-    onContributorClick: (User) -> Unit
+    onContributorClick: (User) -> Unit,
+    isSelected: Boolean // Pass selected state here
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onItemClick() },
+            .clickable { onItemClick() }
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
-                .padding(4.dp),
+                .padding(4.dp)
+                .then(
+                    if (isSelected) Modifier.background(Color.LightGray.copy(alpha = 0.3f)) // Apply background when selected
+                    else Modifier
+                ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Item name on the left
@@ -233,7 +229,10 @@ fun ReceiptItemWithContributors(
             )
             Spacer(modifier = Modifier.width(8.dp))
             // Row for contributor icons on the right, spaced out as desired
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+            ) {
                 items(itemWithUsers.users) { user ->
                     ItemCollaboratorIcon(
                         user = user,

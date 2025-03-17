@@ -222,7 +222,8 @@ fun ItemRow(
         ) {
             Icon(
                 imageVector = Icons.Default.Delete,
-                contentDescription = "Delete Item"
+                contentDescription = "Delete Item",
+                tint = Color.Red
             )
         }
     }
