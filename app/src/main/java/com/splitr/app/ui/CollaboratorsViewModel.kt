@@ -59,7 +59,7 @@ class CollaboratorsViewModel(
     fun addCollaborator(user: User) {
         viewModelScope.launch {
             receiptDao.insertUser(user)
-            _collaborators.value += user
+            _collaborators.value = receiptDao.getAllUsers()
         }
     }
 
